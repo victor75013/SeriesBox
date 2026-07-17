@@ -1,0 +1,111 @@
+/* ===========================
+   SeriesBox — Design Tokens
+   Letterboxd-inspired palette
+   =========================== */
+
+/* Font loaded via index.html <link> tag */
+
+:root {
+  /* ── Background Colors ── */
+  --bg-primary: #14181C;
+  --bg-secondary: #1B2028;
+  --bg-tertiary: #242C34;
+  --bg-elevated: #2C3440;
+  --bg-hover: #313B48;
+  --bg-input: #2C3440;
+  --bg-overlay: rgba(0, 0, 0, 0.7);
+  --bg-modal: #1B2028;
+
+  /* ── Text Colors ── */
+  --text-primary: #FFFFFF;
+  --text-secondary: #99AABB;
+  --text-muted: #667788;
+  --text-link: #40BCF4;
+  --text-inverse: #14181C;
+
+  /* ── Accent Colors ── */
+  --accent-green: #00E054;
+  --accent-green-hover: #00C649;
+  --accent-green-dim: rgba(0, 224, 84, 0.15);
+  --accent-blue: #40BCF4;
+  --accent-blue-hover: #2CA8E0;
+  --accent-blue-dim: rgba(64, 188, 244, 0.15);
+  --accent-orange: #EE7000;
+  --accent-orange-dim: rgba(238, 112, 0, 0.15);
+  --accent-red: #FF2834;
+  --accent-red-dim: rgba(255, 40, 52, 0.15);
+  --accent-purple: #A700FF;
+  --accent-purple-dim: rgba(167, 0, 255, 0.15);
+
+  /* ── Rating Stars ── */
+  --star-filled: #00E054;
+  --star-empty: #456;
+
+  /* ── Borders ── */
+  --border-color: #2C3440;
+  --border-hover: #456;
+  --border-focus: #00E054;
+
+  /* ── Shadows ── */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 20px rgba(0, 224, 84, 0.15);
+
+  /* ── Typography ── */
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-size-xs: 0.7rem;
+  --font-size-sm: 0.8rem;
+  --font-size-base: 0.9rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.15rem;
+  --font-size-xl: 1.35rem;
+  --font-size-2xl: 1.75rem;
+  --font-size-3xl: 2.25rem;
+  --font-size-4xl: 3rem;
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+
+  /* ── Spacing ── */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-base: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+
+  /* ── Border Radius ── */
+  --radius-sm: 3px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 16px;
+  --radius-full: 50%;
+
+  /* ── Layout ── */
+  --navbar-height: 56px;
+  --sidebar-width: 240px;
+  --content-max-width: 1200px;
+  --poster-ratio: 2 / 3;
+
+  /* ── Transitions ── */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+  --transition-slow: 400ms ease;
+  --transition-spring: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ── Z-Index ── */
+  --z-dropdown: 100;
+  --z-navbar: 200;
+  --z-modal-overlay: 300;
+  --z-modal: 400;
+  --z-toast: 500;
+}
