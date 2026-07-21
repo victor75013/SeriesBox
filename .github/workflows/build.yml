@@ -27,3 +27,6 @@ jobs:
         run: npm run build && npx electron-builder --win --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RENDERER_VITE_SUPABASE_URL: ${{ secrets.RENDERER_VITE_SUPABASE_URL }}
+          RENDERER_VITE_SUPABASE_ANON_KEY: ${{ secrets.RENDERER_VITE_SUPABASE_ANON_KEY }}
+          RENDERER_VITE_TMDB_API_KEY: ${{ secrets.RENDERER_VITE_TMDB_API_KEY }}
