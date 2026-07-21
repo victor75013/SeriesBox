@@ -313,6 +313,17 @@ export async function removeFromList(itemId) {
   if (error) throw error
 }
 
+export async function updateListItem(itemId, updates) {
+  const { data, error } = await supabase
+    .from('list_items')
+    .update(updates)
+    .eq('id', itemId)
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
 // ── Statistics Helpers ──
 export async function getStats(userId) {
   const [diary, ratings, watchlist, lists] = await Promise.all([
@@ -341,6 +352,116 @@ export async function getStats(userId) {
     avgRating
   }
 }
+
+// ── Social & Community Infrastructure (Prepared for future use) ──
+
+// 1. User Follows
+export async function followUser(followerId, targetUserId) {
+  const { data, error } = await supabase
+    .from('follows')
+    .insert({ follower_id: followerId, following_id: targetUserId })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function unfollowUser(followerId, targetUserId) {
+  const { error } = await supabase
+    .from('follows')
+    .delete()
+    .eq('follower_id', followerId)
+    .eq('following_id', targetUserId)
+  if (error) throw error
+}
+
+export async function isFollowing(followerId, targetUserId) {
+  const { data, error } = await supabase
+    .from('follows')
+    .select('created_at')
+    .eq('follower_id', followerId)
+    .eq('following_id', targetUserId)
+    .maybeSingle()
+  if (error) throw error
+  return !!data
+}
+
+// 2. Review Likes
+export async function likeReview(userId, diaryId) {
+  const { data, error } = await supabase
+    .from('review_likes')
+    .insert({ user_id: userId, diary_id: diaryId })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function unlikeReview(userId, diaryId) {
+  const { error } = await supabase
+    .from('review_likes')
+    .delete()
+    .eq('user_id', userId)
+    .eq('diary_id', diaryId)
+  if (error) throw error
+}
+
+export async function hasLikedReview(userId, diaryId) {
+  const { data, error } = await supabase
+    .from('review_likes')
+    .select('created_at')
+    .eq('user_id', userId)
+    .eq('diary_id', diaryId)
+    .maybeSingle()
+  if (error) throw error
+  return !!data
+}
+
+// 3. Comments on Reviews
+export async function addCommentToReview(userId, diaryId, content) {
+  const { data, error } = await supabase
+    .from('review_comments')
+    .insert({ user_id: userId, diary_id: diaryId, content })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function getReviewComments(diaryId) {
+  const { data, error } = await supabase
+    .from('review_comments')
+    .select('*, profiles(username, avatar_url)')
+    .eq('diary_id', diaryId)
+    .order('created_at', { ascending: true })
+  if (error) throw error
+  return data
+}
+
+// 4. Social Feed (Activity from followed users)
+export async function getSocialFeed(userId) {
+  // First, get the list of users followed by the current user
+  const { data: follows, error: followsError } = await supabase
+    .from('follows')
+    .select('following_id')
+    .eq('follower_id', userId)
+  if (followsError) throw followsError
+
+  const followingIds = follows.map(f => f.following_id)
+  if (followingIds.length === 0) return []
+
+  // Fetch recent diary entries of followed users
+  const { data: feed, error: feedError } = await supabase
+    .from('diary')
+    .select('*, profiles(username, avatar_url)')
+    .in('user_id', followingIds)
+    .order('watched_at', { ascending: false })
+    .limit(50)
+  if (feedError) throw feedError
+
+  return feed
+}
+
 
 // ── Auth state change listener ──
 export function onAuthStateChange(callback) {

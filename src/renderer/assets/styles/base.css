@@ -150,6 +150,10 @@ h6 {
   animation: fadeIn var(--transition-base) ease-out;
 }
 
+.fade-out {
+  animation: fadeOut 120ms ease-in forwards;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -158,6 +162,17 @@ h6 {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
   }
 }
 

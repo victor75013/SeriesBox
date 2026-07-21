@@ -84,14 +84,17 @@
   border-radius: var(--radius-md);
   overflow: hidden;
   cursor: pointer;
+  border: 2px solid transparent;
   transition:
     transform var(--transition-base),
-    box-shadow var(--transition-base);
+    box-shadow var(--transition-base),
+    border-color var(--transition-fast);
 }
 
 .series-card:hover {
   transform: translateY(-4px) scale(1.02);
   box-shadow: var(--shadow-lg);
+  border-color: var(--accent-green);
 }
 
 .series-card .poster {
@@ -100,12 +103,9 @@
   object-fit: cover;
   background: var(--bg-tertiary);
   border-radius: var(--radius-md);
-  border: 2px solid transparent;
-  transition: border-color var(--transition-fast);
 }
 
 .series-card:hover .poster {
-  border-color: var(--accent-green);
 }
 
 .series-card .poster-placeholder {
@@ -847,4 +847,24 @@ textarea.form-input {
   height: 1px;
   background: var(--border-color);
   margin: var(--space-xs) 0;
+}
+
+/* Tab controls */
+.tab-btn {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-muted);
+  cursor: pointer;
+  padding-bottom: var(--space-xs);
+  border-bottom: 2px solid transparent;
+  transition: all var(--transition-fast);
+}
+
+.tab-btn:hover {
+  color: var(--text-secondary);
+}
+
+.tab-btn.active {
+  color: var(--text-primary);
+  border-bottom-color: var(--accent-green);
 }

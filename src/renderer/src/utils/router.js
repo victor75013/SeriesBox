@@ -38,8 +38,14 @@ class Router {
     this._onHashChange()
   }
 
-  // Internal: handle hash changes
   async _onHashChange() {
+    const content = document.getElementById('content')
+    if (content) {
+      content.classList.add('fade-out')
+      await new Promise((resolve) => setTimeout(resolve, 120))
+      content.classList.remove('fade-out')
+    }
+
     const fullPath = this.getCurrentPath()
     const [path, queryString] = fullPath.split('?')
 

@@ -102,7 +102,13 @@ async function init() {
       if (route === '/auth') return true
 
       // Protected routes need auth
-      const protectedRoutes = ['/diary', '/watchlist', '/lists', '/stats', '/profile']
+      const protectedRoutes = [
+        '/diary',
+        '/watchlist',
+        '/lists',
+        '/stats',
+        '/profile'
+      ]
       const needsAuth = protectedRoutes.some((r) => route.startsWith(r))
 
       if (needsAuth && !currentUser) {

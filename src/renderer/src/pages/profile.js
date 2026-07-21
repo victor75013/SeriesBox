@@ -75,7 +75,7 @@ export async function renderProfile(container) {
                 const topItem = profile.top_four?.[i]
                 if (topItem && topItem.poster_path) {
                   return `
-                  <div class="top-four-slot filled" data-index="${i}" data-tmdb="${topItem.id}" style="position: relative;">
+                  <div class="top-four-slot filled" data-index="${i}" data-tmdb="${topItem.id}" draggable="true" style="position: relative;">
                     <img src="${IMG.poster(topItem.poster_path, 'w342')}" alt="${topItem.name || ''}" />
                     <button class="top-four-edit-btn" data-index="${i}" title="Modifier">✏️</button>
                   </div>
@@ -246,8 +246,9 @@ export async function renderProfile(container) {
       reader.readAsDataURL(file)
     })
 
-    // Top Four click logic
+    // Top Four click & Drag and Drop logic
     let selectedSlotIndex = 0
+    let draggedIndex = null
     const topFourModal = document.getElementById('topfour-modal')
     const removeContainer = document.getElementById('topfour-remove-container')
 
@@ -267,6 +268,38 @@ export async function renderProfile(container) {
 
     document.querySelectorAll('.top-four-slot').forEach((slot) => {
       const index = parseInt(slot.dataset.index)
+
+      // Drag & Drop events
+      slot.addEventListener('dragstart', (e) => {
+        draggedIndex = index
+        e.dataTransfer.effectAllowed = 'move'
+      })
+
+      slot.addEventListener('dragover', (e) => {
+        e.preventDefault()
+        e.dataTransfer.dropEffect = 'move'
+      })
+
+      slot.addEventListener('drop', async (e) => {
+        e.preventDefault()
+        if (draggedIndex === null || draggedIndex === index) return
+
+        const newTopFour = [...(profile.top_four || [null, null, null, null])]
+        while (newTopFour.length < 4) newTopFour.push(null)
+
+        // Swap the elements
+        const temp = newTopFour[draggedIndex]
+        newTopFour[draggedIndex] = newTopFour[index]
+        newTopFour[index] = temp
+
+        try {
+          await updateProfile(session.user.id, { top_four: newTopFour })
+          toast.success('Favoris réorganisés !')
+          renderProfile(container)
+        } catch (err) {
+          toast.error('Erreur: ' + err.message)
+        }
+      })
 
       if (slot.classList.contains('filled')) {
         // Clicks on the edit button open the picker

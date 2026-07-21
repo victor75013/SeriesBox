@@ -98,3 +98,8 @@ export async function getGenreName(id) {
   const genre = genres.find((g) => g.id === id)
   return genre ? genre.name : 'Inconnu'
 }
+
+// ── Recommendations ──
+export async function getRecommendations(id, page = 1) {
+  return tmdbFetch(`/tv/${id}/recommendations`, { page })
+}

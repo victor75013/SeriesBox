@@ -9,6 +9,7 @@ import {
   getList,
   addToList,
   removeFromList,
+  updateListItem,
   getSession
 } from '../api/supabase.js'
 import { searchSeries, IMG } from '../api/tmdb.js'
@@ -316,7 +317,7 @@ function renderListItems(grid, items, listId, session, container) {
   grid.innerHTML = items
     .map(
       (item, idx) => `
-    <div class="series-card" data-tmdb="${item.tmdb_id}">
+    <div class="series-card" data-tmdb="${item.tmdb_id}" data-index="${idx}" data-item-id="${item.id}" draggable="true">
       ${
         item.poster_path
           ? `<img class="poster" src="${IMG.poster(item.poster_path, 'w342')}" alt="${item.series_name}" loading="lazy" />`
@@ -333,7 +334,45 @@ function renderListItems(grid, items, listId, session, container) {
     )
     .join('')
 
+  // Drag & Drop
+  let draggedIndex = null
+
   grid.querySelectorAll('.series-card').forEach((card) => {
+    card.addEventListener('dragstart', (e) => {
+      draggedIndex = parseInt(card.dataset.index)
+      e.dataTransfer.effectAllowed = 'move'
+    })
+
+    card.addEventListener('dragover', (e) => {
+      e.preventDefault()
+      e.dataTransfer.dropEffect = 'move'
+    })
+
+    card.addEventListener('drop', async (e) => {
+      e.preventDefault()
+      const targetIndex = parseInt(card.dataset.index)
+      if (draggedIndex === null || draggedIndex === targetIndex) return
+
+      // Reorder items locally
+      const reorderedItems = [...items]
+      const [removed] = reorderedItems.splice(draggedIndex, 1)
+      reorderedItems.splice(targetIndex, 0, removed)
+
+      // Update positions in database
+      try {
+        toast.info('Mise à jour de l\'ordre...')
+        await Promise.all(
+          reorderedItems.map((item, idx) => {
+            return updateListItem(item.id, { position: idx + 1 })
+          })
+        )
+        toast.success('Ordre de la liste mis à jour !')
+        renderListDetail(container, listId)
+      } catch (err) {
+        toast.error('Erreur: ' + err.message)
+      }
+    })
+
     card.addEventListener('click', (e) => {
       if (e.target.closest('.list-item-remove')) return
       router.navigate(`/series/${card.dataset.tmdb}`)
