@@ -121,10 +121,14 @@ export async function renderProfile(container) {
         <hr style="border: 0; border-top: 1px solid rgba(153, 170, 187, 0.15); margin: var(--space-xl) 0;" />
 
         <!-- Ratings Chart (Full Width at the bottom) -->
-        <div class="chart-card" style="margin-bottom: var(--space-2xl);">
-          <h2 style="font-size: var(--font-size-md); font-weight: var(--font-weight-semibold); text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: var(--space-base);">Notes</h2>
-          <div class="chart-container" style="height: 200px; position: relative;">
-            <canvas id="profile-ratings-chart"></canvas>
+        <div class="chart-card" style="margin-bottom: var(--space-2xl); background: var(--bg-secondary); border: 1px solid var(--border-color); padding: var(--space-lg); border-radius: var(--radius-lg);">
+          <h2 style="font-size: var(--font-size-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-muted); margin-bottom: var(--space-md); margin-top: 0;">Ratings</h2>
+          <div style="display: flex; align-items: flex-end; gap: var(--space-md); height: 75px; padding-bottom: 2px;">
+            <span style="color: #00E054; font-size: 1.1rem; line-height: 1; padding-bottom: 1px; user-select: none;">★</span>
+            <div style="flex: 1; height: 100%; position: relative; border-bottom: 1.5px solid #2c3440; padding-bottom: 1px;">
+              <canvas id="profile-ratings-chart"></canvas>
+            </div>
+            <span style="color: #00E054; font-size: 0.8rem; line-height: 1; padding-bottom: 2px; letter-spacing: -1.5px; user-select: none;">★★★★★</span>
           </div>
         </div>
 
@@ -440,9 +444,8 @@ async function renderProfileRatingsChart(stats) {
   const hasRatings = stats.ratings.length > 0
 
   if (!hasRatings) {
-    // Show placeholder if no ratings
-    const container = canvas.parentElement
-    container.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:var(--font-size-sm);">Aucune note donnée</div>`
+    const container = canvas.parentElement.parentElement
+    container.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:var(--font-size-sm);padding: 20px 0;">Aucune note donnée</div>`
     return
   }
 
@@ -453,8 +456,9 @@ async function renderProfileRatingsChart(stats) {
       datasets: [
         {
           data: ratingValues.map((v) => distribution[v]),
-          backgroundColor: '#00E054', // Letterboxd green
-          borderRadius: 3,
+          backgroundColor: '#445566', // Letterboxd grey-blue bars
+          hoverBackgroundColor: '#00E054', // Letterboxd green on hover
+          borderRadius: 1,
           borderSkipped: false
         }
       ]
@@ -465,6 +469,7 @@ async function renderProfileRatingsChart(stats) {
       plugins: {
         legend: { display: false },
         tooltip: {
+          enabled: true,
           callbacks: {
             title: (tooltipItems) => tooltipItems[0].label,
             label: (context) => {
@@ -475,22 +480,8 @@ async function renderProfileRatingsChart(stats) {
         }
       },
       scales: {
-        x: {
-          ticks: {
-            color: '#99AABB',
-            font: { size: 10 },
-            callback: function (value, index, ticks) {
-              if (index === 1) return '★'
-              if (index === 9) return '★★★★★'
-              return ''
-            }
-          },
-          grid: { display: false }
-        },
-        y: {
-          ticks: { color: '#667788', stepSize: 1, font: { size: 9 } },
-          grid: { color: 'rgba(44, 52, 64, 0.4)' }
-        }
+        x: { display: false },
+        y: { display: false }
       }
     }
   })

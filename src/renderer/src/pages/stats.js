@@ -56,8 +56,12 @@ export async function renderStats(container) {
         <div class="stats-charts">
           <div class="chart-card">
             <h3>Notes données</h3>
-            <div class="chart-container">
-              <canvas id="ratings-chart"></canvas>
+            <div style="display: flex; align-items: flex-end; gap: var(--space-md); height: 75px; padding-bottom: 2px; margin-top: var(--space-md);">
+              <span style="color: #00E054; font-size: 1.1rem; line-height: 1; padding-bottom: 1px; user-select: none;">★</span>
+              <div style="flex: 1; height: 100%; position: relative; border-bottom: 1.5px solid #2c3440; padding-bottom: 1px;">
+                <canvas id="ratings-chart"></canvas>
+              </div>
+              <span style="color: #00E054; font-size: 0.8rem; line-height: 1; padding-bottom: 2px; letter-spacing: -1.5px; user-select: none;">★★★★★</span>
             </div>
           </div>
           <div class="chart-card">
@@ -178,8 +182,9 @@ async function renderCharts(stats) {
         datasets: [
           {
             data: ratingValues.map((v) => distribution[v]),
-            backgroundColor: chartColors.green,
-            borderRadius: 4,
+            backgroundColor: '#445566', // Letterboxd grey-blue bars
+            hoverBackgroundColor: '#00E054', // Letterboxd green on hover
+            borderRadius: 1,
             borderSkipped: false
           }
         ]
@@ -187,16 +192,22 @@ async function renderCharts(stats) {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: {
-            ticks: { color: '#99AABB', font: { size: 10 } },
-            grid: { display: false }
-          },
-          y: {
-            ticks: { color: '#667788', stepSize: 1 },
-            grid: { color: 'rgba(44,52,64,0.5)' }
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            enabled: true,
+            callbacks: {
+              title: (tooltipItems) => tooltipItems[0].label,
+              label: (context) => {
+                const count = context.raw
+                return `${count} série${count > 1 ? 's' : ''}`
+              }
+            }
           }
+        },
+        scales: {
+          x: { display: false },
+          y: { display: false }
         }
       }
     })
