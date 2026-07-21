@@ -57,7 +57,7 @@
 }
 
 .btn-danger:hover {
-  background: #E02030;
+  background: #e02030;
 }
 
 .btn-icon {
@@ -84,7 +84,9 @@
   border-radius: var(--radius-md);
   overflow: hidden;
   cursor: pointer;
-  transition: transform var(--transition-base), box-shadow var(--transition-base);
+  transition:
+    transform var(--transition-base),
+    box-shadow var(--transition-base);
 }
 
 .series-card:hover {
@@ -192,7 +194,9 @@
 .star-rating .star {
   position: relative;
   color: var(--star-empty);
-  transition: color var(--transition-fast), transform var(--transition-fast);
+  transition:
+    color var(--transition-fast),
+    transform var(--transition-fast);
   display: inline-block;
   width: 1em;
   text-align: center;
@@ -313,7 +317,6 @@
 .navbar-search input {
   width: 100%;
   padding: var(--space-sm) var(--space-md);
-  padding-left: 36px;
   background: var(--bg-tertiary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
@@ -559,7 +562,7 @@ textarea.form-input {
   color: var(--text-secondary);
 }
 
-.form-checkbox input[type="checkbox"] {
+.form-checkbox input[type='checkbox'] {
   width: 16px;
   height: 16px;
   accent-color: var(--accent-green);
@@ -609,9 +612,15 @@ textarea.form-input {
   flex-shrink: 0;
 }
 
-.toast-success .toast-icon { color: var(--accent-green); }
-.toast-error .toast-icon { color: var(--accent-red); }
-.toast-info .toast-icon { color: var(--accent-blue); }
+.toast-success .toast-icon {
+  color: var(--accent-green);
+}
+.toast-error .toast-icon {
+  color: var(--accent-red);
+}
+.toast-info .toast-icon {
+  color: var(--accent-blue);
+}
 
 .toast-message {
   flex: 1;
@@ -708,7 +717,9 @@ textarea.form-input {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .page-loader {

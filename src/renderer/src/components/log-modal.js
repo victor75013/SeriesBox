@@ -8,7 +8,7 @@ import { toast } from './toast.js'
 
 export function showLogModal({ userId, tmdbId, seriesName, posterPath, entry = null, onSave }) {
   const isEdit = !!entry
-  
+
   // Create overlay
   const overlay = document.createElement('div')
   overlay.className = 'modal-overlay'
@@ -18,7 +18,7 @@ export function showLogModal({ userId, tmdbId, seriesName, posterPath, entry = n
   // Pre-fill values
   const watchedDate = entry ? entry.watched_date.slice(0, 7) : new Date().toISOString().slice(0, 7)
   const rating = entry ? Number(entry.rating || 0) : 0
-  const review = entry ? (entry.review || '') : ''
+  const review = entry ? entry.review || '' : ''
   const isRewatch = entry ? !!entry.is_rewatch : false
   const containsSpoilers = entry ? !!entry.contains_spoilers : false
 

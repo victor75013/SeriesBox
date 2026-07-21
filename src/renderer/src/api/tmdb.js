@@ -8,10 +8,10 @@ const API_KEY = import.meta.env.RENDERER_VITE_TMDB_API_KEY
 
 // Image size helpers
 export const IMG = {
-  poster: (path, size = 'w342') => path ? `${IMG_BASE}/${size}${path}` : null,
-  backdrop: (path, size = 'w1280') => path ? `${IMG_BASE}/${size}${path}` : null,
-  profile: (path, size = 'w185') => path ? `${IMG_BASE}/${size}${path}` : null,
-  still: (path, size = 'w300') => path ? `${IMG_BASE}/${size}${path}` : null,
+  poster: (path, size = 'w342') => (path ? `${IMG_BASE}/${size}${path}` : null),
+  backdrop: (path, size = 'w1280') => (path ? `${IMG_BASE}/${size}${path}` : null),
+  profile: (path, size = 'w185') => (path ? `${IMG_BASE}/${size}${path}` : null),
+  still: (path, size = 'w300') => (path ? `${IMG_BASE}/${size}${path}` : null)
 }
 
 // Generic fetch helper
@@ -95,6 +95,6 @@ export async function getGenres() {
 // ── Get genre name by ID ──
 export async function getGenreName(id) {
   const genres = await getGenres()
-  const genre = genres.find(g => g.id === id)
+  const genre = genres.find((g) => g.id === id)
   return genre ? genre.name : 'Inconnu'
 }

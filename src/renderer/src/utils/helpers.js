@@ -87,7 +87,9 @@ export function createStarRating(container, currentRating = 0, onChange = null) 
 
   for (let i = 1; i <= 5; i++) {
     const star = document.createElement('span')
-    star.className = 'star' + (i <= Math.floor(currentRating) ? ' filled' : '') +
+    star.className =
+      'star' +
+      (i <= Math.floor(currentRating) ? ' filled' : '') +
       (currentRating % 1 >= 0.5 && i === Math.ceil(currentRating) ? ' half' : '')
     star.textContent = '★'
     star.dataset.value = i
@@ -95,7 +97,7 @@ export function createStarRating(container, currentRating = 0, onChange = null) 
     // Half-star support on click position
     star.addEventListener('click', (e) => {
       const rect = star.getBoundingClientRect()
-      const isHalf = (e.clientX - rect.left) < rect.width / 2
+      const isHalf = e.clientX - rect.left < rect.width / 2
       const value = isHalf ? i - 0.5 : i
       updateStars(container, value)
       if (onChange) onChange(value)
@@ -158,5 +160,5 @@ export function formatRuntime(minutes) {
 
 // Plural helper
 export function plural(count, singular, pluralForm) {
-  return count <= 1 ? singular : (pluralForm || singular + 's')
+  return count <= 1 ? singular : pluralForm || singular + 's'
 }

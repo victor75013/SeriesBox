@@ -53,15 +53,20 @@ export async function renderWatchlist(container) {
           <button class="btn btn-primary" style="margin-top:16px;" id="go-search">Découvrir des séries</button>
         </div>
       `
-      document.getElementById('go-search')?.addEventListener('click', () => router.navigate('/search'))
+      document
+        .getElementById('go-search')
+        ?.addEventListener('click', () => router.navigate('/search'))
       return
     }
 
-    grid.innerHTML = watchlist.map(item => `
+    grid.innerHTML = watchlist
+      .map(
+        (item) => `
       <div class="series-card" data-id="${item.tmdb_id}">
-        ${item.poster_path
-          ? `<img class="poster" src="${IMG.poster(item.poster_path, 'w342')}" alt="${item.series_name}" loading="lazy" />`
-          : `<div class="poster-placeholder">📺</div>`
+        ${
+          item.poster_path
+            ? `<img class="poster" src="${IMG.poster(item.poster_path, 'w342')}" alt="${item.series_name}" loading="lazy" />`
+            : `<div class="poster-placeholder">📺</div>`
         }
         <div class="watchlist-badge" title="Dans la watchlist">👁</div>
         <div class="card-overlay">
@@ -72,10 +77,12 @@ export async function renderWatchlist(container) {
           </button>
         </div>
       </div>
-    `).join('')
+    `
+      )
+      .join('')
 
     // Click on card → detail
-    grid.querySelectorAll('.series-card').forEach(card => {
+    grid.querySelectorAll('.series-card').forEach((card) => {
       card.addEventListener('click', (e) => {
         if (e.target.closest('.watchlist-remove')) return
         router.navigate(`/series/${card.dataset.id}`)
@@ -83,7 +90,7 @@ export async function renderWatchlist(container) {
     })
 
     // Remove from watchlist
-    grid.querySelectorAll('.watchlist-remove').forEach(btn => {
+    grid.querySelectorAll('.watchlist-remove').forEach((btn) => {
       btn.addEventListener('click', async (e) => {
         e.stopPropagation()
         try {
@@ -95,7 +102,6 @@ export async function renderWatchlist(container) {
         }
       })
     })
-
   } catch (err) {
     console.error('Watchlist error:', err)
   }

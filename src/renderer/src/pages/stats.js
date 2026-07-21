@@ -77,7 +77,9 @@ export async function renderStats(container) {
         </div>
 
         <!-- Top rated -->
-        ${stats.ratings.length > 0 ? `
+        ${
+          stats.ratings.length > 0
+            ? `
           <div class="chart-card">
             <h3>Vos meilleures notes</h3>
             <div style="display:flex;flex-direction:column;gap:8px;">
@@ -85,7 +87,7 @@ export async function renderStats(container) {
                 .sort((a, b) => b.rating - a.rating)
                 .slice(0, 10)
                 .map((r, i) => {
-                  const entry = stats.diary.find(d => d.tmdb_id === r.tmdb_id)
+                  const entry = stats.diary.find((d) => d.tmdb_id === r.tmdb_id)
                   return `
                     <div style="display:flex;align-items:center;gap:12px;padding:8px;border-radius:6px;cursor:pointer;transition:background 0.15s;"
                          onmouseenter="this.style.background='var(--bg-tertiary)'"
@@ -96,17 +98,19 @@ export async function renderStats(container) {
                       <span style="color:var(--star-filled);font-weight:700;">★ ${r.rating}</span>
                     </div>
                   `
-                }).join('')}
+                })
+                .join('')}
             </div>
           </div>
-        ` : ''}
+        `
+            : ''
+        }
       </div>
     `
 
     // Render charts
     renderCharts(stats)
     renderHeatmap(stats.diary)
-
   } catch (err) {
     console.error('Stats error:', err)
     container.innerHTML = `
@@ -122,8 +126,27 @@ export async function renderStats(container) {
 }
 
 async function renderCharts(stats) {
-  const { Chart, BarController, DoughnutController, BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Legend } = await import('chart.js')
-  Chart.register(BarController, DoughnutController, BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Legend)
+  const {
+    Chart,
+    BarController,
+    DoughnutController,
+    BarElement,
+    ArcElement,
+    CategoryScale,
+    LinearScale,
+    Tooltip,
+    Legend
+  } = await import('chart.js')
+  Chart.register(
+    BarController,
+    DoughnutController,
+    BarElement,
+    ArcElement,
+    CategoryScale,
+    LinearScale,
+    Tooltip,
+    Legend
+  )
 
   const chartColors = {
     green: '#00E054',
@@ -140,10 +163,10 @@ async function renderCharts(stats) {
   if (ratingsCanvas && stats.ratings.length > 0) {
     const ratingValues = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]
     const distribution = {}
-    ratingValues.forEach(v => {
+    ratingValues.forEach((v) => {
       distribution[v] = 0
     })
-    stats.ratings.forEach(r => {
+    stats.ratings.forEach((r) => {
       const key = Number(r.rating)
       if (distribution[key] !== undefined) distribution[key]++
     })
@@ -151,13 +174,15 @@ async function renderCharts(stats) {
     new Chart(ratingsCanvas, {
       type: 'bar',
       data: {
-        labels: ratingValues.map(v => `${v}★`),
-        datasets: [{
-          data: ratingValues.map(v => distribution[v]),
-          backgroundColor: chartColors.green,
-          borderRadius: 4,
-          borderSkipped: false
-        }]
+        labels: ratingValues.map((v) => `${v}★`),
+        datasets: [
+          {
+            data: ratingValues.map((v) => distribution[v]),
+            backgroundColor: chartColors.green,
+            borderRadius: 4,
+            borderSkipped: false
+          }
+        ]
       },
       options: {
         responsive: true,
@@ -189,7 +214,7 @@ async function renderCharts(stats) {
       monthlyData[key] = { label, count: 0 }
     }
 
-    stats.diary.forEach(entry => {
+    stats.diary.forEach((entry) => {
       const d = new Date(entry.watched_date)
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
       if (monthlyData[key]) monthlyData[key].count++
@@ -198,13 +223,15 @@ async function renderCharts(stats) {
     new Chart(monthlyCanvas, {
       type: 'bar',
       data: {
-        labels: Object.values(monthlyData).map(d => d.label),
-        datasets: [{
-          data: Object.values(monthlyData).map(d => d.count),
-          backgroundColor: chartColors.blue,
-          borderRadius: 4,
-          borderSkipped: false
-        }]
+        labels: Object.values(monthlyData).map((d) => d.label),
+        datasets: [
+          {
+            data: Object.values(monthlyData).map((d) => d.count),
+            backgroundColor: chartColors.blue,
+            borderRadius: 4,
+            borderSkipped: false
+          }
+        ]
       },
       options: {
         responsive: true,
@@ -231,7 +258,7 @@ function renderHeatmap(diary) {
 
   // Count entries per day for the last 365 days
   const dayCounts = {}
-  diary.forEach(entry => {
+  diary.forEach((entry) => {
     const d = entry.watched_date
     dayCounts[d] = (dayCounts[d] || 0) + 1
   })

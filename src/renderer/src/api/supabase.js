@@ -31,21 +31,18 @@ export async function signUp(email, password, username) {
 
 // Ensure a profile exists for the given user (create if missing)
 export async function ensureProfile(userId, username) {
-  const { data } = await supabase
-    .from('profiles')
-    .select('id')
-    .eq('id', userId)
-    .single()
+  const { data } = await supabase.from('profiles').select('id').eq('id', userId).single()
 
   if (!data) {
-    const { error } = await supabase
-      .from('profiles')
-      .upsert({
+    const { error } = await supabase.from('profiles').upsert(
+      {
         id: userId,
         username: username || 'Utilisateur',
         avatar_url: null,
         top_four: []
-      }, { onConflict: 'id' })
+      },
+      { onConflict: 'id' }
+    )
     if (error) console.error('Profile ensure error:', error)
   }
 }
@@ -78,11 +75,7 @@ export async function getUser() {
 
 // ── Profile ──
 export async function getProfile(userId) {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', userId)
-    .single()
+  const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single()
   if (error) throw error
   return data
 }
@@ -100,11 +93,7 @@ export async function updateProfile(userId, updates) {
 
 // ── Diary Entries ──
 export async function addDiaryEntry(entry) {
-  const { data, error } = await supabase
-    .from('diary_entries')
-    .insert(entry)
-    .select()
-    .single()
+  const { data, error } = await supabase.from('diary_entries').insert(entry).select().single()
   if (error) throw error
   return data
 }
@@ -117,7 +106,8 @@ export async function getDiaryEntries(userId, options = {}) {
     .order('watched_date', { ascending: false })
 
   if (options.limit) query = query.limit(options.limit)
-  if (options.offset) query = query.range(options.offset, options.offset + (options.limit || 20) - 1)
+  if (options.offset)
+    query = query.range(options.offset, options.offset + (options.limit || 20) - 1)
 
   const { data, error } = await query
   if (error) throw error
@@ -125,10 +115,7 @@ export async function getDiaryEntries(userId, options = {}) {
 }
 
 export async function deleteDiaryEntry(id) {
-  const { error } = await supabase
-    .from('diary_entries')
-    .delete()
-    .eq('id', id)
+  const { error } = await supabase.from('diary_entries').delete().eq('id', id)
   if (error) throw error
 }
 
@@ -158,12 +145,15 @@ export async function getDiaryEntriesForSeries(userId, tmdbId) {
 export async function setRating(userId, tmdbId, rating) {
   const { data, error } = await supabase
     .from('ratings')
-    .upsert({
-      user_id: userId,
-      tmdb_id: tmdbId,
-      rating,
-      updated_at: new Date().toISOString()
-    }, { onConflict: 'user_id,tmdb_id' })
+    .upsert(
+      {
+        user_id: userId,
+        tmdb_id: tmdbId,
+        rating,
+        updated_at: new Date().toISOString()
+      },
+      { onConflict: 'user_id,tmdb_id' }
+    )
     .select()
     .single()
   if (error) throw error
@@ -182,10 +172,7 @@ export async function getRating(userId, tmdbId) {
 }
 
 export async function getAllRatings(userId) {
-  const { data, error } = await supabase
-    .from('ratings')
-    .select('*')
-    .eq('user_id', userId)
+  const { data, error } = await supabase.from('ratings').select('*').eq('user_id', userId)
   if (error) throw error
   return data
 }
@@ -254,12 +241,14 @@ export async function createList(userId, title, description = '') {
 export async function getLists(userId) {
   const { data, error } = await supabase
     .from('lists')
-    .select(`
+    .select(
+      `
       *,
       list_items (
         id, tmdb_id, series_name, poster_path, position
       )
-    `)
+    `
+    )
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
   if (error) throw error
@@ -269,12 +258,14 @@ export async function getLists(userId) {
 export async function getList(listId) {
   const { data, error } = await supabase
     .from('lists')
-    .select(`
+    .select(
+      `
       *,
       list_items (
         id, tmdb_id, series_name, poster_path, position, notes
       )
-    `)
+    `
+    )
     .eq('id', listId)
     .single()
   if (error) throw error
@@ -297,10 +288,7 @@ export async function updateList(listId, updates) {
 }
 
 export async function deleteList(listId) {
-  const { error } = await supabase
-    .from('lists')
-    .delete()
-    .eq('id', listId)
+  const { error } = await supabase.from('lists').delete().eq('id', listId)
   if (error) throw error
 }
 
@@ -321,10 +309,7 @@ export async function addToList(listId, series, position) {
 }
 
 export async function removeFromList(itemId) {
-  const { error } = await supabase
-    .from('list_items')
-    .delete()
-    .eq('id', itemId)
+  const { error } = await supabase.from('list_items').delete().eq('id', itemId)
   if (error) throw error
 }
 
@@ -337,11 +322,12 @@ export async function getStats(userId) {
     getLists(userId)
   ])
 
-  const totalSeries = new Set(diary.map(e => e.tmdb_id)).size
+  const totalSeries = new Set(diary.map((e) => e.tmdb_id)).size
   const totalEntries = diary.length
-  const avgRating = ratings.length > 0
-    ? (ratings.reduce((sum, r) => sum + Number(r.rating), 0) / ratings.length).toFixed(1)
-    : 0
+  const avgRating =
+    ratings.length > 0
+      ? (ratings.reduce((sum, r) => sum + Number(r.rating), 0) / ratings.length).toFixed(1)
+      : 0
 
   return {
     diary,

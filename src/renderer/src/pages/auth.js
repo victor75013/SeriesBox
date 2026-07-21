@@ -22,12 +22,16 @@ export async function renderAuth(container) {
           <div class="auth-error" id="auth-error"></div>
 
           <form class="auth-form" id="auth-form">
-            ${!isLogin ? `
+            ${
+              !isLogin
+                ? `
               <div class="form-group">
                 <label class="form-label" for="username">Nom d'utilisateur</label>
                 <input class="form-input" type="text" id="username" placeholder="MonPseudo" required />
               </div>
-            ` : ''}
+            `
+                : ''
+            }
 
             <div class="form-group">
               <label class="form-label" for="email">Email</label>
@@ -45,9 +49,10 @@ export async function renderAuth(container) {
           </form>
 
           <div class="auth-switch">
-            ${isLogin
-              ? "Pas encore de compte ? <a id=\"switch-auth\">S'inscrire</a>"
-              : 'Déjà un compte ? <a id="switch-auth">Se connecter</a>'
+            ${
+              isLogin
+                ? 'Pas encore de compte ? <a id="switch-auth">S\'inscrire</a>'
+                : 'Déjà un compte ? <a id="switch-auth">Se connecter</a>'
             }
           </div>
         </div>

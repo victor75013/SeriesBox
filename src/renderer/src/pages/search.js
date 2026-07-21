@@ -2,7 +2,15 @@
 // SeriesBox — Search Page
 // ===========================
 
-import { searchSeries, getPopular, getTopRated, getOnTheAir, discoverSeries, getGenres, IMG } from '../api/tmdb.js'
+import {
+  searchSeries,
+  getPopular,
+  getTopRated,
+  getOnTheAir,
+  discoverSeries,
+  getGenres,
+  IMG
+} from '../api/tmdb.js'
 import { router } from '../utils/router.js'
 import { getYear, debounce } from '../utils/helpers.js'
 
@@ -43,12 +51,12 @@ export async function renderSearch(container, params = {}) {
     const filtersContainer = document.getElementById('genre-filters')
     filtersContainer.innerHTML = `
       <span class="chip ${!selectedGenre ? 'active' : ''}" data-genre="">Tous</span>
-      ${genres.map(g => `<span class="chip" data-genre="${g.id}">${g.name}</span>`).join('')}
+      ${genres.map((g) => `<span class="chip" data-genre="${g.id}">${g.name}</span>`).join('')}
     `
 
-    filtersContainer.querySelectorAll('.chip').forEach(chip => {
+    filtersContainer.querySelectorAll('.chip').forEach((chip) => {
       chip.addEventListener('click', () => {
-        filtersContainer.querySelectorAll('.chip').forEach(c => c.classList.remove('active'))
+        filtersContainer.querySelectorAll('.chip').forEach((c) => c.classList.remove('active'))
         chip.classList.add('active')
         selectedGenre = chip.dataset.genre || null
         currentPage = 1
@@ -137,9 +145,15 @@ export async function renderSearch(container, params = {}) {
     try {
       let data
       switch (sort) {
-        case 'top_rated': data = await getTopRated(); break
-        case 'on_the_air': data = await getOnTheAir(); break
-        default: data = await getPopular(); break
+        case 'top_rated':
+          data = await getTopRated()
+          break
+        case 'on_the_air':
+          data = await getOnTheAir()
+          break
+        default:
+          data = await getPopular()
+          break
       }
 
       allResults = data.results || []
@@ -162,11 +176,14 @@ export async function renderSearch(container, params = {}) {
       return
     }
 
-    container.innerHTML = results.map(series => `
+    container.innerHTML = results
+      .map(
+        (series) => `
       <div class="series-card" data-id="${series.id}">
-        ${series.poster_path
-          ? `<img class="poster" src="${IMG.poster(series.poster_path, 'w342')}" alt="${series.name}" loading="lazy" />`
-          : `<div class="poster-placeholder">📺</div>`
+        ${
+          series.poster_path
+            ? `<img class="poster" src="${IMG.poster(series.poster_path, 'w342')}" alt="${series.name}" loading="lazy" />`
+            : `<div class="poster-placeholder">📺</div>`
         }
         ${series.vote_average > 0 ? `<div class="card-rating">★ ${series.vote_average.toFixed(1)}</div>` : ''}
         <div class="card-overlay">
@@ -174,9 +191,11 @@ export async function renderSearch(container, params = {}) {
           <div class="card-year">${getYear(series.first_air_date)}</div>
         </div>
       </div>
-    `).join('')
+    `
+      )
+      .join('')
 
-    container.querySelectorAll('.series-card').forEach(card => {
+    container.querySelectorAll('.series-card').forEach((card) => {
       card.addEventListener('click', () => router.navigate(`/series/${card.dataset.id}`))
     })
   }

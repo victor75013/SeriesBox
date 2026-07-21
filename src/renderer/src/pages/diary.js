@@ -56,7 +56,9 @@ export async function renderDiary(container) {
           <button class="btn btn-primary" style="margin-top:16px;" id="go-search">Découvrir des séries</button>
         </div>
       `
-      document.getElementById('go-search')?.addEventListener('click', () => router.navigate('/search'))
+      document
+        .getElementById('go-search')
+        ?.addEventListener('click', () => router.navigate('/search'))
       return
     }
 
@@ -99,7 +101,7 @@ export async function renderDiary(container) {
     diaryList.innerHTML = html
 
     // Click on entry → go to series
-    diaryList.querySelectorAll('.diary-entry').forEach(el => {
+    diaryList.querySelectorAll('.diary-entry').forEach((el) => {
       el.addEventListener('click', (e) => {
         if (e.target.closest('.diary-delete') || e.target.closest('.diary-edit')) return
         router.navigate(`/series/${el.dataset.tmdb}`)
@@ -107,11 +109,11 @@ export async function renderDiary(container) {
     })
 
     // Edit entry
-    diaryList.querySelectorAll('.diary-edit').forEach(btn => {
+    diaryList.querySelectorAll('.diary-edit').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation()
         const entryId = btn.dataset.entryId
-        const entry = entries.find(e => e.id === entryId)
+        const entry = entries.find((e) => e.id === entryId)
         if (!entry) return
 
         showLogModal({
@@ -126,7 +128,7 @@ export async function renderDiary(container) {
     })
 
     // Delete entry
-    diaryList.querySelectorAll('.diary-delete').forEach(btn => {
+    diaryList.querySelectorAll('.diary-delete').forEach((btn) => {
       btn.addEventListener('click', async (e) => {
         e.stopPropagation()
         const confirmed = await confirmModal(
@@ -144,7 +146,6 @@ export async function renderDiary(container) {
         }
       })
     })
-
   } catch (err) {
     console.error('Diary error:', err)
     container.innerHTML = `

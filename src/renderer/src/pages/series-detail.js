@@ -4,20 +4,32 @@
 
 import { getSeriesDetails, getSeasonDetails, IMG } from '../api/tmdb.js'
 import {
-  getSession, getRating, setRating, isInWatchlist,
-  addToWatchlist, removeFromWatchlist, addDiaryEntry,
-  getDiaryEntriesForSeries
+  getSession,
+  getRating,
+  setRating,
+  isInWatchlist,
+  addToWatchlist,
+  removeFromWatchlist,
+  addDiaryEntry,
+  getDiaryEntriesForSeries,
+  deleteDiaryEntry
 } from '../api/supabase.js'
 import { router } from '../utils/router.js'
 import { toast } from '../components/toast.js'
 import {
-  formatDate, getYear, starsHTML, truncate,
-  createStarRating, escapeHTML, formatRuntime
+  formatDate,
+  getYear,
+  starsHTML,
+  truncate,
+  createStarRating,
+  escapeHTML,
+  formatRuntime
 } from '../utils/helpers.js'
 import { showLogModal } from '../components/log-modal.js'
 import { confirmModal } from '../components/confirm-modal.js'
 
-export async function renderSeriesDetail(container, { id }) {
+export async function renderSeriesDetail(container, params) {
+  const { id } = params
   container.innerHTML = `<div class="page-container"><div class="page-loader"><div class="spinner"></div></div></div>`
 
   try {
@@ -28,22 +40,23 @@ export async function renderSeriesDetail(container, { id }) {
     let diaryEntries = []
 
     if (session) {
-      [userRating, inWatchlist, diaryEntries] = await Promise.all([
+      ;[userRating, inWatchlist, diaryEntries] = await Promise.all([
         getRating(session.user.id, series.id),
         isInWatchlist(session.user.id, series.id),
         getDiaryEntriesForSeries(session.user.id, series.id)
       ])
     }
 
-    const genres = series.genres?.map(g => g.name).join(', ') || ''
-    const creators = series.created_by?.map(c => c.name).join(', ') || ''
-    const status = {
-      'Returning Series': 'En cours',
-      'Ended': 'Terminée',
-      'Canceled': 'Annulée',
-      'In Production': 'En production',
-      'Planned': 'Planifiée'
-    }[series.status] || series.status
+    const genres = series.genres?.map((g) => g.name).join(', ') || ''
+    const creators = series.created_by?.map((c) => c.name).join(', ') || ''
+    const status =
+      {
+        'Returning Series': 'En cours',
+        Ended: 'Terminée',
+        Canceled: 'Annulée',
+        'In Production': 'En production',
+        Planned: 'Planifiée'
+      }[series.status] || series.status
 
     container.innerHTML = `
       <div class="detail-header">
@@ -53,9 +66,10 @@ export async function renderSeriesDetail(container, { id }) {
 
       <div class="detail-main">
         <div class="detail-poster-container">
-          ${series.poster_path
-            ? `<img class="detail-poster" src="${IMG.poster(series.poster_path, 'w500')}" alt="${series.name}" />`
-            : `<div class="detail-poster poster-placeholder" style="height:345px; width:230px;">📺</div>`
+          ${
+            series.poster_path
+              ? `<img class="detail-poster" src="${IMG.poster(series.poster_path, 'w500')}" alt="${series.name}" />`
+              : `<div class="detail-poster poster-placeholder" style="height:345px; width:230px;">📺</div>`
           }
         </div>
 
@@ -69,16 +83,20 @@ export async function renderSeriesDetail(container, { id }) {
             <span>${series.number_of_seasons} saison${series.number_of_seasons > 1 ? 's' : ''}</span>
             <span class="detail-meta-separator"></span>
             <span>${series.number_of_episodes} épisodes</span>
-            ${series.episode_run_time?.length ? `
+            ${
+              series.episode_run_time?.length
+                ? `
               <span class="detail-meta-separator"></span>
               <span>${formatRuntime(series.episode_run_time[0])}/ép.</span>
-            ` : ''}
+            `
+                : ''
+            }
             <span class="detail-meta-separator"></span>
             <span class="badge ${status === 'En cours' ? 'badge-green' : status === 'Terminée' ? 'badge-blue' : 'badge-orange'}">${status}</span>
           </div>
 
           <div class="detail-genres">
-            ${series.genres?.map(g => `<span class="chip">${g.name}</span>`).join('') || ''}
+            ${series.genres?.map((g) => `<span class="chip">${g.name}</span>`).join('') || ''}
           </div>
 
           <div class="detail-rating-row">
@@ -109,31 +127,44 @@ export async function renderSeriesDetail(container, { id }) {
       </div>
 
       <div class="detail-content">
-        ${series.overview ? `
+        ${
+          series.overview
+            ? `
           <div class="detail-overview">
             <h3>Synopsis</h3>
             <p>${escapeHTML(series.overview)}</p>
           </div>
-        ` : ''}
+        `
+            : ''
+        }
 
-        ${creators ? `
+        ${
+          creators
+            ? `
           <div class="detail-overview">
             <h3>Créée par</h3>
             <p>${escapeHTML(creators)}</p>
           </div>
-        ` : ''}
+        `
+            : ''
+        }
 
         <!-- Seasons -->
         <div class="detail-overview">
           <h3>Saisons</h3>
         </div>
         <div id="seasons-container">
-          ${series.seasons?.filter(s => s.season_number > 0).map(season => `
+          ${
+            series.seasons
+              ?.filter((s) => s.season_number > 0)
+              .map(
+                (season) => `
             <div class="season-item" data-season="${season.season_number}">
               <div class="season-header">
-                ${season.poster_path
-                  ? `<img class="season-poster-mini" src="${IMG.poster(season.poster_path, 'w92')}" alt="" />`
-                  : `<div class="season-poster-mini" style="background:var(--bg-tertiary);display:flex;align-items:center;justify-content:center;">📺</div>`
+                ${
+                  season.poster_path
+                    ? `<img class="season-poster-mini" src="${IMG.poster(season.poster_path, 'w92')}" alt="" />`
+                    : `<div class="season-poster-mini" style="background:var(--bg-tertiary);display:flex;align-items:center;justify-content:center;">📺</div>`
                 }
                 <div class="season-info">
                   <div class="season-name">${escapeHTML(season.name)}</div>
@@ -143,59 +174,89 @@ export async function renderSeriesDetail(container, { id }) {
               </div>
               <div class="season-episodes" id="season-${season.season_number}-episodes"></div>
             </div>
-          `).join('') || '<p style="color:var(--text-muted)">Aucune saison disponible</p>'}
+          `
+              )
+              .join('') || '<p style="color:var(--text-muted)">Aucune saison disponible</p>'
+          }
         </div>
 
         <!-- Cast -->
-        ${series.credits?.cast?.length ? `
+        ${
+          series.credits?.cast?.length
+            ? `
           <div class="detail-overview" style="margin-top: var(--space-xl);">
             <h3>Casting</h3>
           </div>
           <div class="cast-grid">
-            ${series.credits.cast.slice(0, 15).map(person => `
+            ${series.credits.cast
+              .slice(0, 15)
+              .map(
+                (person) => `
               <div class="cast-card">
-                ${person.profile_path
-                  ? `<img class="cast-photo" src="${IMG.profile(person.profile_path)}" alt="${person.name}" loading="lazy" />`
-                  : `<div class="cast-photo" style="display:flex;align-items:center;justify-content:center;font-size:1.5rem;">👤</div>`
+                ${
+                  person.profile_path
+                    ? `<img class="cast-photo" src="${IMG.profile(person.profile_path)}" alt="${person.name}" loading="lazy" />`
+                    : `<div class="cast-photo" style="display:flex;align-items:center;justify-content:center;font-size:1.5rem;">👤</div>`
                 }
                 <div class="cast-name">${escapeHTML(person.name)}</div>
                 <div class="cast-character">${escapeHTML(person.character)}</div>
               </div>
-            `).join('')}
+            `
+              )
+              .join('')}
           </div>
-        ` : ''}
+        `
+            : ''
+        }
 
         <!-- Similar Series -->
-        ${series.similar?.results?.length ? `
+        ${
+          series.similar?.results?.length
+            ? `
           <div class="detail-overview" style="margin-top: var(--space-xl);">
             <h3>Séries similaires</h3>
           </div>
           <div class="scroll-row" id="similar-row">
-            ${series.similar.results.slice(0, 10).map(s => `
+            ${series.similar.results
+              .slice(0, 10)
+              .map(
+                (s) => `
               <div class="series-card" data-id="${s.id}" style="width:130px;flex-shrink:0;">
-                ${s.poster_path
-                  ? `<img class="poster" src="${IMG.poster(s.poster_path, 'w185')}" alt="${s.name}" loading="lazy" />`
-                  : `<div class="poster-placeholder">📺</div>`
+                ${
+                  s.poster_path
+                    ? `<img class="poster" src="${IMG.poster(s.poster_path, 'w185')}" alt="${s.name}" loading="lazy" />`
+                    : `<div class="poster-placeholder">📺</div>`
                 }
                 <div class="card-overlay">
                   <div class="card-title">${s.name}</div>
                   <div class="card-year">${getYear(s.first_air_date)}</div>
                 </div>
               </div>
-            `).join('')}
+            `
+              )
+              .join('')}
           </div>
-        ` : ''}
+        `
+            : ''
+        }
 
         <!-- Diary entries for this series -->
-        ${diaryEntries.length > 0 ? `
+        ${
+          diaryEntries.length > 0
+            ? `
           <div class="detail-overview" style="margin-top: var(--space-xl);">
             <h3>Vos visionnages</h3>
           </div>
           <div>
-            ${diaryEntries.map(entry => {
-              const formattedDate = new Date(entry.watched_date).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
-              const capitalizedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1)
-              return `
+            ${diaryEntries
+              .map((entry) => {
+                const formattedDate = new Date(entry.watched_date).toLocaleDateString('fr-FR', {
+                  month: 'long',
+                  year: 'numeric'
+                })
+                const capitalizedDate =
+                  formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1)
+                return `
                 <div class="diary-entry details-diary-entry" data-entry-id="${entry.id}" style="cursor:pointer;">
                   <div class="diary-date" style="width: auto; text-align: left; padding-right: 16px;">
                     <div style="font-size: var(--font-size-sm); color: var(--text-secondary); font-weight: 500;">
@@ -215,9 +276,12 @@ export async function renderSeriesDetail(container, { id }) {
                   </div>
                 </div>
               `
-            }).join('')}
+              })
+              .join('')}
           </div>
-        ` : ''}
+        `
+            : ''
+        }
       </div>
     `
 
@@ -236,8 +300,11 @@ export async function renderSeriesDetail(container, { id }) {
 
     // ── Log modal (Create) ──
     document.getElementById('btn-log').addEventListener('click', () => {
-      if (!session) { toast.error('Connectez-vous pour logger'); return }
-      
+      if (!session) {
+        toast.error('Connectez-vous pour logger')
+        return
+      }
+
       showLogModal({
         userId: session.user.id,
         tmdbId: series.id,
@@ -249,11 +316,11 @@ export async function renderSeriesDetail(container, { id }) {
     })
 
     // ── Edit entry click ──
-    container.querySelectorAll('.details-diary-entry').forEach(el => {
+    container.querySelectorAll('.details-diary-entry').forEach((el) => {
       el.addEventListener('click', (e) => {
         if (e.target.closest('.details-diary-delete')) return
         const entryId = el.dataset.entryId
-        const entry = diaryEntries.find(d => d.id === entryId)
+        const entry = diaryEntries.find((d) => d.id === entryId)
         if (!entry) return
 
         showLogModal({
@@ -268,7 +335,7 @@ export async function renderSeriesDetail(container, { id }) {
     })
 
     // ── Delete entry click ──
-    container.querySelectorAll('.details-diary-delete').forEach(btn => {
+    container.querySelectorAll('.details-diary-delete').forEach((btn) => {
       btn.addEventListener('click', async (e) => {
         e.stopPropagation()
         const confirmed = await confirmModal(
@@ -289,7 +356,10 @@ export async function renderSeriesDetail(container, { id }) {
 
     // ── Watchlist toggle ──
     document.getElementById('btn-watchlist').addEventListener('click', async () => {
-      if (!session) { toast.error('Connectez-vous pour utiliser la watchlist'); return }
+      if (!session) {
+        toast.error('Connectez-vous pour utiliser la watchlist')
+        return
+      }
       const btn = document.getElementById('btn-watchlist')
       try {
         if (inWatchlist) {
@@ -311,7 +381,7 @@ export async function renderSeriesDetail(container, { id }) {
     })
 
     // ── Season accordion ──
-    document.querySelectorAll('.season-header').forEach(header => {
+    document.querySelectorAll('.season-header').forEach((header) => {
       header.addEventListener('click', async () => {
         const item = header.closest('.season-item')
         const seasonNum = parseInt(item.dataset.season)
@@ -323,39 +393,66 @@ export async function renderSeriesDetail(container, { id }) {
         }
 
         // Close others
-        document.querySelectorAll('.season-item.open').forEach(s => s.classList.remove('open'))
+        document.querySelectorAll('.season-item.open').forEach((s) => s.classList.remove('open'))
         item.classList.add('open')
 
         // Load episodes if not already loaded
         if (!episodesContainer.innerHTML.trim()) {
-          episodesContainer.innerHTML = '<div class="page-loader" style="padding:16px;"><div class="spinner"></div></div>'
+          episodesContainer.innerHTML =
+            '<div class="page-loader" style="padding:16px;"><div class="spinner"></div></div>'
           try {
             const seasonData = await getSeasonDetails(id, seasonNum)
-            episodesContainer.innerHTML = seasonData.episodes.map(ep => `
+            episodesContainer.innerHTML = seasonData.episodes
+              .map(
+                (ep) => `
               <div class="episode-item">
                 <span class="episode-number">${ep.episode_number}</span>
-                ${ep.still_path
-                  ? `<img class="episode-still" src="${IMG.still(ep.still_path)}" alt="" loading="lazy" />`
-                  : `<div class="episode-still" style="display:flex;align-items:center;justify-content:center;color:var(--text-muted);">📺</div>`
+                ${
+                  ep.still_path
+                    ? `<img class="episode-still" src="${IMG.still(ep.still_path)}" alt="" loading="lazy" />`
+                    : `<div class="episode-still" style="display:flex;align-items:center;justify-content:center;color:var(--text-muted);">📺</div>`
                 }
                 <div class="episode-info">
                   <div class="episode-name">${escapeHTML(ep.name)}</div>
                   <div class="episode-date">${formatDate(ep.air_date)}</div>
                 </div>
               </div>
-            `).join('')
+            `
+              )
+              .join('')
           } catch (err) {
-            episodesContainer.innerHTML = '<p style="padding:16px;color:var(--text-muted);">Erreur de chargement</p>'
+            episodesContainer.innerHTML =
+              '<p style="padding:16px;color:var(--text-muted);">Erreur de chargement</p>'
           }
         }
       })
     })
 
     // ── Similar series click ──
-    document.querySelectorAll('#similar-row .series-card').forEach(card => {
+    document.querySelectorAll('#similar-row .series-card').forEach((card) => {
       card.addEventListener('click', () => router.navigate(`/series/${card.dataset.id}`))
     })
 
+    // ── Auto-open review modal if query param review=true is present ──
+    if (session && params.review === 'true') {
+      const entryWithReview = diaryEntries.find((entry) => entry.review)
+      if (entryWithReview) {
+        // Strip the query param to prevent re-opening if page is updated/re-rendered
+        if (window.location.hash.includes('?')) {
+          const basePath = window.location.hash.split('?')[0]
+          window.history.replaceState(null, '', basePath)
+        }
+
+        showLogModal({
+          userId: session.user.id,
+          tmdbId: series.id,
+          seriesName: series.name,
+          posterPath: series.poster_path,
+          entry: entryWithReview,
+          onSave: () => renderSeriesDetail(container, { id })
+        })
+      }
+    }
   } catch (err) {
     console.error('Series detail error:', err)
     container.innerHTML = `

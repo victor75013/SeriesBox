@@ -103,7 +103,7 @@ async function init() {
 
       // Protected routes need auth
       const protectedRoutes = ['/diary', '/watchlist', '/lists', '/stats', '/profile']
-      const needsAuth = protectedRoutes.some(r => route.startsWith(r))
+      const needsAuth = protectedRoutes.some((r) => route.startsWith(r))
 
       if (needsAuth && !currentUser) {
         toast.info('Connectez-vous pour accéder à cette page')
@@ -138,6 +138,6 @@ async function init() {
 }
 
 // Start the app
-init().catch(err => {
+init().catch((err) => {
   console.error('App init error:', err)
 })

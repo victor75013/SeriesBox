@@ -1,6 +1,6 @@
 {
   "name": "seriesbox",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "SeriesBox — Suivez, notez et critiquez vos séries TV",
   "main": "./out/main/index.js",
   "author": "SeriesBox",

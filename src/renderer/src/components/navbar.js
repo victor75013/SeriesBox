@@ -27,7 +27,6 @@ export function renderNavbar(container, user) {
       </div>
 
       <div class="navbar-search" id="navbar-search">
-        <span class="search-icon">🔍</span>
         <input type="text" placeholder="Rechercher une série..." id="nav-search-input" autocomplete="off" />
         <div class="search-dropdown" id="search-dropdown"></div>
       </div>
@@ -49,21 +48,23 @@ export function renderNavbar(container, user) {
 
   // Fetch avatar asynchronously
   if (user) {
-    getProfile(user.id).then(profile => {
-      if (profile && profile.avatar_url) {
-        const avatarEl = document.getElementById('navbar-avatar-el')
-        if (avatarEl) {
-          avatarEl.innerHTML = `<img src="${profile.avatar_url}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" />`
-          avatarEl.style.background = 'transparent'
-          avatarEl.style.padding = '0'
-          avatarEl.style.border = 'none'
+    getProfile(user.id)
+      .then((profile) => {
+        if (profile && profile.avatar_url) {
+          const avatarEl = document.getElementById('navbar-avatar-el')
+          if (avatarEl) {
+            avatarEl.innerHTML = `<img src="${profile.avatar_url}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" />`
+            avatarEl.style.background = 'transparent'
+            avatarEl.style.padding = '0'
+            avatarEl.style.border = 'none'
+          }
         }
-      }
-    }).catch(err => console.error('Navbar profile avatar error:', err))
+      })
+      .catch((err) => console.error('Navbar profile avatar error:', err))
   }
 
   // Setup navigation links
-  container.querySelectorAll('[data-nav]').forEach(el => {
+  container.querySelectorAll('[data-nav]').forEach((el) => {
     el.addEventListener('click', (e) => {
       e.preventDefault()
       router.navigate(el.dataset.nav)
@@ -99,7 +100,7 @@ export function renderNavbar(container, user) {
 
 export function updateActiveNav() {
   const currentPath = router.getCurrentPath().split('?')[0]
-  document.querySelectorAll('.nav-link').forEach(link => {
+  document.querySelectorAll('.nav-link').forEach((link) => {
     const route = link.dataset.route
     if (route === '/' && currentPath === '/') {
       link.classList.add('active')
@@ -130,7 +131,10 @@ function setupSearch() {
         return
       }
 
-      dropdown.innerHTML = data.results.slice(0, 8).map(series => `
+      dropdown.innerHTML = data.results
+        .slice(0, 8)
+        .map(
+          (series) => `
         <div class="search-result-item" data-id="${series.id}">
           <img class="mini-poster" src="${IMG.poster(series.poster_path, 'w92') || ''}"
                alt="" onerror="this.style.display='none'" />
@@ -139,12 +143,14 @@ function setupSearch() {
             <div class="result-meta">${series.first_air_date ? new Date(series.first_air_date).getFullYear() : 'N/A'}</div>
           </div>
         </div>
-      `).join('')
+      `
+        )
+        .join('')
 
       dropdown.classList.add('show')
 
       // Click on result
-      dropdown.querySelectorAll('.search-result-item[data-id]').forEach(item => {
+      dropdown.querySelectorAll('.search-result-item[data-id]').forEach((item) => {
         item.addEventListener('click', () => {
           router.navigate(`/series/${item.dataset.id}`)
           dropdown.classList.remove('show')

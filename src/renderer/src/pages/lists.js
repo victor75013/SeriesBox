@@ -3,8 +3,13 @@
 // ===========================
 
 import {
-  getLists, createList, deleteList, getList,
-  addToList, removeFromList, getSession
+  getLists,
+  createList,
+  deleteList,
+  getList,
+  addToList,
+  removeFromList,
+  getSession
 } from '../api/supabase.js'
 import { searchSeries, IMG } from '../api/tmdb.js'
 import { router } from '../utils/router.js'
@@ -79,15 +84,26 @@ export async function renderLists(container, params = {}) {
 
     // Create list modal
     const modal = document.getElementById('create-list-modal')
-    document.getElementById('create-list-btn').addEventListener('click', () => modal.classList.add('show'))
-    document.getElementById('create-list-close').addEventListener('click', () => modal.classList.remove('show'))
-    document.getElementById('create-list-cancel').addEventListener('click', () => modal.classList.remove('show'))
-    modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('show') })
+    document
+      .getElementById('create-list-btn')
+      .addEventListener('click', () => modal.classList.add('show'))
+    document
+      .getElementById('create-list-close')
+      .addEventListener('click', () => modal.classList.remove('show'))
+    document
+      .getElementById('create-list-cancel')
+      .addEventListener('click', () => modal.classList.remove('show'))
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.classList.remove('show')
+    })
 
     document.getElementById('create-list-save').addEventListener('click', async () => {
       const title = document.getElementById('list-title').value.trim()
       const description = document.getElementById('list-description').value.trim()
-      if (!title) { toast.error('Veuillez saisir un titre'); return }
+      if (!title) {
+        toast.error('Veuillez saisir un titre')
+        return
+      }
 
       try {
         await createList(session.user.id, title, description)
@@ -98,7 +114,6 @@ export async function renderLists(container, params = {}) {
         toast.error('Erreur: ' + err.message)
       }
     })
-
   } catch (err) {
     console.error('Lists error:', err)
   }
@@ -116,19 +131,23 @@ function renderListCards(grid, lists) {
     return
   }
 
-  grid.innerHTML = lists.map(list => {
-    const items = list.list_items || []
-    const posters = items.slice(0, 4)
-    return `
+  grid.innerHTML = lists
+    .map((list) => {
+      const items = list.list_items || []
+      const posters = items.slice(0, 4)
+      return `
       <div class="list-card" data-id="${list.id}">
         <div class="list-card-posters">
-          ${posters.length > 0
-            ? posters.map(item =>
-                item.poster_path
-                  ? `<img src="${IMG.poster(item.poster_path, 'w185')}" alt="" />`
-                  : `<div style="flex:1;background:var(--bg-tertiary);display:flex;align-items:center;justify-content:center;">📺</div>`
-              ).join('')
-            : `<div style="flex:1;background:var(--bg-tertiary);display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:2rem;">📋</div>`
+          ${
+            posters.length > 0
+              ? posters
+                  .map((item) =>
+                    item.poster_path
+                      ? `<img src="${IMG.poster(item.poster_path, 'w185')}" alt="" />`
+                      : `<div style="flex:1;background:var(--bg-tertiary);display:flex;align-items:center;justify-content:center;">📺</div>`
+                  )
+                  .join('')
+              : `<div style="flex:1;background:var(--bg-tertiary);display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:2rem;">📋</div>`
           }
         </div>
         <div class="list-card-body">
@@ -137,9 +156,10 @@ function renderListCards(grid, lists) {
         </div>
       </div>
     `
-  }).join('')
+    })
+    .join('')
 
-  grid.querySelectorAll('.list-card').forEach(card => {
+  grid.querySelectorAll('.list-card').forEach((card) => {
     card.addEventListener('click', () => {
       router.navigate(`/lists/${card.dataset.id}`)
     })
@@ -194,7 +214,9 @@ async function renderListDetail(container, listId) {
       </div>
     `
 
-    document.getElementById('back-to-lists').addEventListener('click', () => router.navigate('/lists'))
+    document
+      .getElementById('back-to-lists')
+      .addEventListener('click', () => router.navigate('/lists'))
 
     // Render items
     const itemsGrid = document.getElementById('list-items-grid')
@@ -219,18 +241,30 @@ async function renderListDetail(container, listId) {
 
     // Add to list modal
     const addModal = document.getElementById('add-modal')
-    document.getElementById('add-to-list-btn').addEventListener('click', () => addModal.classList.add('show'))
-    document.getElementById('add-modal-close').addEventListener('click', () => addModal.classList.remove('show'))
-    addModal.addEventListener('click', (e) => { if (e.target === addModal) addModal.classList.remove('show') })
+    document
+      .getElementById('add-to-list-btn')
+      .addEventListener('click', () => addModal.classList.add('show'))
+    document
+      .getElementById('add-modal-close')
+      .addEventListener('click', () => addModal.classList.remove('show'))
+    addModal.addEventListener('click', (e) => {
+      if (e.target === addModal) addModal.classList.remove('show')
+    })
 
     const addSearchInput = document.getElementById('add-search-input')
     const addSearchResults = document.getElementById('add-search-results')
 
     const doAddSearch = debounce(async (query) => {
-      if (!query || query.length < 2) { addSearchResults.innerHTML = ''; return }
+      if (!query || query.length < 2) {
+        addSearchResults.innerHTML = ''
+        return
+      }
       try {
         const data = await searchSeries(query)
-        addSearchResults.innerHTML = data.results.slice(0, 6).map(s => `
+        addSearchResults.innerHTML = data.results
+          .slice(0, 6)
+          .map(
+            (s) => `
           <div class="search-result-item" data-series='${JSON.stringify({ id: s.id, name: s.name, poster_path: s.poster_path })}'>
             <img class="mini-poster" src="${IMG.poster(s.poster_path, 'w92') || ''}" alt="" onerror="this.style.display='none'" />
             <div class="result-info">
@@ -238,9 +272,11 @@ async function renderListDetail(container, listId) {
               <div class="result-meta">${s.first_air_date ? new Date(s.first_air_date).getFullYear() : 'N/A'}</div>
             </div>
           </div>
-        `).join('')
+        `
+          )
+          .join('')
 
-        addSearchResults.querySelectorAll('.search-result-item').forEach(item => {
+        addSearchResults.querySelectorAll('.search-result-item').forEach((item) => {
           item.addEventListener('click', async () => {
             try {
               const series = JSON.parse(item.dataset.series)
@@ -260,7 +296,6 @@ async function renderListDetail(container, listId) {
     }, 300)
 
     addSearchInput.addEventListener('input', (e) => doAddSearch(e.target.value))
-
   } catch (err) {
     console.error('List detail error:', err)
   }
@@ -278,11 +313,14 @@ function renderListItems(grid, items, listId, session, container) {
     return
   }
 
-  grid.innerHTML = items.map((item, idx) => `
+  grid.innerHTML = items
+    .map(
+      (item, idx) => `
     <div class="series-card" data-tmdb="${item.tmdb_id}">
-      ${item.poster_path
-        ? `<img class="poster" src="${IMG.poster(item.poster_path, 'w342')}" alt="${item.series_name}" loading="lazy" />`
-        : `<div class="poster-placeholder">📺</div>`
+      ${
+        item.poster_path
+          ? `<img class="poster" src="${IMG.poster(item.poster_path, 'w342')}" alt="${item.series_name}" loading="lazy" />`
+          : `<div class="poster-placeholder">📺</div>`
       }
       <div class="card-overlay">
         <div class="card-title">${item.series_name}</div>
@@ -291,16 +329,18 @@ function renderListItems(grid, items, listId, session, container) {
         </button>
       </div>
     </div>
-  `).join('')
+  `
+    )
+    .join('')
 
-  grid.querySelectorAll('.series-card').forEach(card => {
+  grid.querySelectorAll('.series-card').forEach((card) => {
     card.addEventListener('click', (e) => {
       if (e.target.closest('.list-item-remove')) return
       router.navigate(`/series/${card.dataset.tmdb}`)
     })
   })
 
-  grid.querySelectorAll('.list-item-remove').forEach(btn => {
+  grid.querySelectorAll('.list-item-remove').forEach((btn) => {
     btn.addEventListener('click', async (e) => {
       e.stopPropagation()
       try {

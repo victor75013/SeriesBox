@@ -45,7 +45,7 @@ export async function renderHome(container) {
   `
 
   // Setup nav links
-  container.querySelectorAll('[data-nav]').forEach(el => {
+  container.querySelectorAll('[data-nav]').forEach((el) => {
     el.addEventListener('click', (e) => {
       e.preventDefault()
       router.navigate(el.dataset.nav)
@@ -71,7 +71,6 @@ export async function renderHome(container) {
 
     // Recent activity
     await renderRecentActivity()
-
   } catch (err) {
     console.error('Home page error:', err)
     container.querySelector('.page-loader')?.remove()
@@ -111,24 +110,33 @@ function renderSeriesRow(containerId, seriesList) {
   const row = document.getElementById(containerId)
   if (!row) return
 
-  row.innerHTML = seriesList.map(series => `
+  row.innerHTML = seriesList
+    .map(
+      (series) => `
     <div class="series-card" data-id="${series.id}" style="width: 150px;">
-      ${series.poster_path
-        ? `<img class="poster" src="${IMG.poster(series.poster_path, 'w342')}" alt="${series.name}" loading="lazy" />`
-        : `<div class="poster-placeholder">📺</div>`
+      ${
+        series.poster_path
+          ? `<img class="poster" src="${IMG.poster(series.poster_path, 'w342')}" alt="${series.name}" loading="lazy" />`
+          : `<div class="poster-placeholder">📺</div>`
       }
-      ${series.vote_average > 0 ? `
+      ${
+        series.vote_average > 0
+          ? `
         <div class="card-rating">★ ${series.vote_average.toFixed(1)}</div>
-      ` : ''}
+      `
+          : ''
+      }
       <div class="card-overlay">
         <div class="card-title">${series.name}</div>
         <div class="card-year">${getYear(series.first_air_date)}</div>
       </div>
     </div>
-  `).join('')
+  `
+    )
+    .join('')
 
   // Click to detail
-  row.querySelectorAll('.series-card').forEach(card => {
+  row.querySelectorAll('.series-card').forEach((card) => {
     card.addEventListener('click', () => {
       router.navigate(`/series/${card.dataset.id}`)
     })
@@ -163,22 +171,33 @@ async function renderRecentActivity() {
       return
     }
 
-    activityRow.innerHTML = `<div class="scroll-row">${entries.map(entry => `
-      <div class="series-card" data-id="${entry.tmdb_id}" style="width: 120px;">
-        ${entry.poster_path
-          ? `<img class="poster" src="${IMG.poster(entry.poster_path, 'w185')}" alt="${entry.series_name}" loading="lazy" />`
-          : `<div class="poster-placeholder">📺</div>`
+    activityRow.innerHTML = `<div class="scroll-row">${entries
+      .map(
+        (entry) => `
+      <div class="series-card" data-id="${entry.tmdb_id}" data-has-review="${!!entry.review}" style="width: 120px;">
+        ${
+          entry.poster_path
+            ? `<img class="poster" src="${IMG.poster(entry.poster_path, 'w185')}" alt="${entry.series_name}" loading="lazy" />`
+            : `<div class="poster-placeholder">📺</div>`
         }
         ${entry.rating ? `<div class="card-rating">★ ${entry.rating}</div>` : ''}
         <div class="card-overlay">
           <div class="card-title">${entry.series_name}</div>
         </div>
       </div>
-    `).join('')}</div>`
+    `
+      )
+      .join('')}</div>`
 
-    activityRow.querySelectorAll('.series-card').forEach(card => {
+    activityRow.querySelectorAll('.series-card').forEach((card) => {
       card.addEventListener('click', () => {
-        router.navigate(`/series/${card.dataset.id}`)
+        const tmdbId = card.dataset.id
+        const hasReview = card.dataset.hasReview === 'true'
+        if (hasReview) {
+          router.navigate(`/series/${tmdbId}?review=true`)
+        } else {
+          router.navigate(`/series/${tmdbId}`)
+        }
       })
     })
   } catch (err) {

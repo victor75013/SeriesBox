@@ -39,9 +39,15 @@ class ToastManager {
     setTimeout(() => this._remove(toast), duration)
   }
 
-  success(message) { this.show(message, 'success') }
-  error(message) { this.show(message, 'error') }
-  info(message) { this.show(message, 'info') }
+  success(message) {
+    this.show(message, 'success')
+  }
+  error(message) {
+    this.show(message, 'error')
+  }
+  info(message) {
+    this.show(message, 'info')
+  }
 
   _remove(toast) {
     if (!toast.parentNode) return

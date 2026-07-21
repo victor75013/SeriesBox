@@ -51,8 +51,12 @@ export function confirmModal(title, message) {
 
     // Event listeners
     overlay.querySelector('#confirm-modal-ok-btn').addEventListener('click', () => cleanup(true))
-    overlay.querySelector('#confirm-modal-cancel-btn').addEventListener('click', () => cleanup(false))
-    overlay.querySelector('#confirm-modal-close-btn').addEventListener('click', () => cleanup(false))
+    overlay
+      .querySelector('#confirm-modal-cancel-btn')
+      .addEventListener('click', () => cleanup(false))
+    overlay
+      .querySelector('#confirm-modal-close-btn')
+      .addEventListener('click', () => cleanup(false))
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay) cleanup(false)
     })

@@ -7,44 +7,44 @@
 
 :root {
   /* ── Background Colors ── */
-  --bg-primary: #14181C;
-  --bg-secondary: #1B2028;
-  --bg-tertiary: #242C34;
-  --bg-elevated: #2C3440;
-  --bg-hover: #313B48;
-  --bg-input: #2C3440;
+  --bg-primary: #14181c;
+  --bg-secondary: #1b2028;
+  --bg-tertiary: #242c34;
+  --bg-elevated: #2c3440;
+  --bg-hover: #313b48;
+  --bg-input: #2c3440;
   --bg-overlay: rgba(0, 0, 0, 0.7);
-  --bg-modal: #1B2028;
+  --bg-modal: #1b2028;
 
   /* ── Text Colors ── */
-  --text-primary: #FFFFFF;
-  --text-secondary: #99AABB;
+  --text-primary: #ffffff;
+  --text-secondary: #99aabb;
   --text-muted: #667788;
-  --text-link: #40BCF4;
-  --text-inverse: #14181C;
+  --text-link: #40bcf4;
+  --text-inverse: #14181c;
 
   /* ── Accent Colors ── */
-  --accent-green: #00E054;
-  --accent-green-hover: #00C649;
+  --accent-green: #00e054;
+  --accent-green-hover: #00c649;
   --accent-green-dim: rgba(0, 224, 84, 0.15);
-  --accent-blue: #40BCF4;
-  --accent-blue-hover: #2CA8E0;
+  --accent-blue: #40bcf4;
+  --accent-blue-hover: #2ca8e0;
   --accent-blue-dim: rgba(64, 188, 244, 0.15);
-  --accent-orange: #EE7000;
+  --accent-orange: #ee7000;
   --accent-orange-dim: rgba(238, 112, 0, 0.15);
-  --accent-red: #FF2834;
+  --accent-red: #ff2834;
   --accent-red-dim: rgba(255, 40, 52, 0.15);
-  --accent-purple: #A700FF;
+  --accent-purple: #a700ff;
   --accent-purple-dim: rgba(167, 0, 255, 0.15);
 
   /* ── Rating Stars ── */
-  --star-filled: #00E054;
+  --star-filled: #00e054;
   --star-empty: #456;
 
   /* ── Borders ── */
-  --border-color: #2C3440;
+  --border-color: #2c3440;
   --border-hover: #456;
-  --border-focus: #00E054;
+  --border-focus: #00e054;
 
   /* ── Shadows ── */
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);

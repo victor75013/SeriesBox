@@ -33,7 +33,10 @@ export async function renderProfile(container) {
       // Profile might not exist yet, create it
       profile = {
         id: session.user.id,
-        username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'Utilisateur',
+        username:
+          session.user.user_metadata?.username ||
+          session.user.email?.split('@')[0] ||
+          'Utilisateur',
         top_four: []
       }
     }
@@ -46,9 +49,10 @@ export async function renderProfile(container) {
         <!-- Profile Header -->
         <div class="profile-header">
           <div class="profile-avatar-container" id="profile-avatar-container" style="position: relative; width: 100px; height: 100px; cursor: pointer; flex-shrink: 0; border-radius: 50%; overflow: hidden; margin-bottom: var(--space-xs);">
-            ${profile.avatar_url
-              ? `<img src="${profile.avatar_url}" style="width: 100%; height: 100%; object-fit: cover;" id="profile-avatar-img" />`
-              : `<div class="profile-avatar" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: var(--font-size-3xl); font-weight: var(--font-weight-bold); color: var(--accent-green); background: var(--accent-green-dim);">${initial}</div>`
+            ${
+              profile.avatar_url
+                ? `<img src="${profile.avatar_url}" style="width: 100%; height: 100%; object-fit: cover;" id="profile-avatar-img" />`
+                : `<div class="profile-avatar" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: var(--font-size-3xl); font-weight: var(--font-weight-bold); color: var(--accent-green); background: var(--accent-green-dim);">${initial}</div>`
             }
             <div class="avatar-hover-overlay" style="position: absolute; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--transition-fast);">
               <span style="font-size: var(--font-size-xs); color: #fff; text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em;">Modifier</span>
@@ -66,21 +70,24 @@ export async function renderProfile(container) {
         <div class="top-four" style="margin-bottom: var(--space-xl);">
           <h2>Séries favorites</h2>
           <div class="top-four-grid" id="top-four-grid">
-            ${[0, 1, 2, 3].map(i => {
-              const topItem = profile.top_four?.[i]
-              if (topItem && topItem.poster_path) {
-                return `
-                  <div class="top-four-slot" data-index="${i}" data-tmdb="${topItem.id}">
+            ${[0, 1, 2, 3]
+              .map((i) => {
+                const topItem = profile.top_four?.[i]
+                if (topItem && topItem.poster_path) {
+                  return `
+                  <div class="top-four-slot filled" data-index="${i}" data-tmdb="${topItem.id}" style="position: relative;">
                     <img src="${IMG.poster(topItem.poster_path, 'w342')}" alt="${topItem.name || ''}" />
+                    <button class="top-four-edit-btn" data-index="${i}" title="Modifier">✏️</button>
                   </div>
                 `
-              }
-              return `
+                }
+                return `
                 <div class="top-four-slot" data-index="${i}">
                   <span class="placeholder-icon">+</span>
                 </div>
               `
-            }).join('')}
+              })
+              .join('')}
           </div>
         </div>
 
@@ -92,15 +99,23 @@ export async function renderProfile(container) {
           <a class="section-link" style="cursor:pointer; font-size: var(--font-size-sm);" id="go-diary">Voir le journal →</a>
         </div>
         <div class="scroll-row" id="recent-posters" style="margin-bottom: var(--space-xl);">
-          ${stats.diary.slice(0, 10).map(entry => `
-            <div class="series-card" data-id="${entry.tmdb_id}" style="width:120px;flex-shrink:0;">
-              ${entry.poster_path
-                ? `<img class="poster" src="${IMG.poster(entry.poster_path, 'w185')}" alt="${entry.series_name}" loading="lazy" />`
-                : `<div class="poster-placeholder">📺</div>`
+          ${
+            stats.diary
+              .slice(0, 10)
+              .map(
+                (entry) => `
+            <div class="series-card" data-id="${entry.tmdb_id}" data-has-review="${!!entry.review}" style="width:120px;flex-shrink:0;">
+              ${
+                entry.poster_path
+                  ? `<img class="poster" src="${IMG.poster(entry.poster_path, 'w185')}" alt="${entry.series_name}" loading="lazy" />`
+                  : `<div class="poster-placeholder">📺</div>`
               }
               ${entry.rating ? `<div class="card-rating">★ ${entry.rating}</div>` : ''}
             </div>
-          `).join('') || '<p style="color:var(--text-muted);">Aucune activité</p>'}
+          `
+              )
+              .join('') || '<p style="color:var(--text-muted);">Aucune activité</p>'
+          }
         </div>
 
         <hr style="border: 0; border-top: 1px solid rgba(153, 170, 187, 0.15); margin: var(--space-xl) 0;" />
@@ -123,6 +138,9 @@ export async function renderProfile(container) {
             <div class="modal-body">
               <input class="form-input" type="text" id="topfour-search" placeholder="Rechercher une série..." />
               <div id="topfour-results" style="margin-top:12px;max-height:300px;overflow-y:auto;"></div>
+              <div id="topfour-remove-container" style="margin-top: 16px; display: none; text-align: center;">
+                <button class="btn btn-danger" id="topfour-remove-btn" style="width: 100%;">Retirer des favorites</button>
+              </div>
             </div>
           </div>
         </div>
@@ -131,11 +149,19 @@ export async function renderProfile(container) {
 
     // Navigation
     document.getElementById('go-diary')?.addEventListener('click', () => router.navigate('/diary'))
-    
+
     // Render Ratings Chart
     renderProfileRatingsChart(stats)
-    container.querySelectorAll('.series-card').forEach(card => {
-      card.addEventListener('click', () => router.navigate(`/series/${card.dataset.id}`))
+    container.querySelectorAll('#recent-posters .series-card').forEach((card) => {
+      card.addEventListener('click', () => {
+        const tmdbId = card.dataset.id
+        const hasReview = card.dataset.hasReview === 'true'
+        if (hasReview) {
+          router.navigate(`/series/${tmdbId}?review=true`)
+        } else {
+          router.navigate(`/series/${tmdbId}`)
+        }
+      })
     })
 
     // Profile avatar upload logic
@@ -163,7 +189,7 @@ export async function renderProfile(container) {
         return
       }
 
-      toast.info('Traitement de l\'image...')
+      toast.info("Traitement de l'image...")
 
       const reader = new FileReader()
       reader.onload = (event) => {
@@ -199,7 +225,7 @@ export async function renderProfile(container) {
           try {
             await updateProfile(session.user.id, { avatar_url: base64Data })
             toast.success('Photo de profil mise à jour !')
-            
+
             // Refresh navbar avatar
             const navbarAvatarEl = document.getElementById('navbar-avatar-el')
             if (navbarAvatarEl) {
@@ -220,30 +246,95 @@ export async function renderProfile(container) {
       reader.readAsDataURL(file)
     })
 
-    // Top Four click → open picker
+    // Top Four click logic
     let selectedSlotIndex = 0
     const topFourModal = document.getElementById('topfour-modal')
+    const removeContainer = document.getElementById('topfour-remove-container')
 
-    document.querySelectorAll('.top-four-slot').forEach(slot => {
-      slot.addEventListener('click', () => {
-        selectedSlotIndex = parseInt(slot.dataset.index)
-        topFourModal.classList.add('show')
-        document.getElementById('topfour-search').value = ''
-        document.getElementById('topfour-results').innerHTML = ''
-        document.getElementById('topfour-search').focus()
-      })
+    const openPicker = (index) => {
+      selectedSlotIndex = index
+      const topItem = profile.top_four?.[index]
+      if (topItem && topItem.poster_path) {
+        removeContainer.style.display = 'block'
+      } else {
+        removeContainer.style.display = 'none'
+      }
+      topFourModal.classList.add('show')
+      document.getElementById('topfour-search').value = ''
+      document.getElementById('topfour-results').innerHTML = ''
+      document.getElementById('topfour-search').focus()
+    }
+
+    document.querySelectorAll('.top-four-slot').forEach((slot) => {
+      const index = parseInt(slot.dataset.index)
+
+      if (slot.classList.contains('filled')) {
+        // Clicks on the edit button open the picker
+        const editBtn = slot.querySelector('.top-four-edit-btn')
+        editBtn?.addEventListener('click', (e) => {
+          e.stopPropagation()
+          openPicker(index)
+        })
+
+        // Clicking the slot itself (the poster) redirects
+        slot.addEventListener('click', (e) => {
+          if (e.target.closest('.top-four-edit-btn')) return
+          const tmdbId = slot.dataset.tmdb
+          const hasReview = stats.diary.some(
+            (entry) => Number(entry.tmdb_id) === Number(tmdbId) && entry.review
+          )
+
+          if (hasReview) {
+            router.navigate(`/series/${tmdbId}?review=true`)
+          } else {
+            router.navigate(`/series/${tmdbId}`)
+          }
+        })
+      } else {
+        // Clicks on empty slot open the picker
+        slot.addEventListener('click', () => {
+          openPicker(index)
+        })
+      }
     })
 
-    document.getElementById('topfour-modal-close').addEventListener('click', () => topFourModal.classList.remove('show'))
-    topFourModal.addEventListener('click', (e) => { if (e.target === topFourModal) topFourModal.classList.remove('show') })
+    // Remove from favorites button
+    const removeBtn = document.getElementById('topfour-remove-btn')
+    removeBtn?.addEventListener('click', async () => {
+      const newTopFour = [...(profile.top_four || [null, null, null, null])]
+      while (newTopFour.length < 4) newTopFour.push(null)
+      newTopFour[selectedSlotIndex] = null
+
+      try {
+        await updateProfile(session.user.id, { top_four: newTopFour })
+        toast.success('Série retirée des favorites')
+        topFourModal.classList.remove('show')
+        renderProfile(container)
+      } catch (err) {
+        toast.error('Erreur: ' + err.message)
+      }
+    })
+
+    document
+      .getElementById('topfour-modal-close')
+      .addEventListener('click', () => topFourModal.classList.remove('show'))
+    topFourModal.addEventListener('click', (e) => {
+      if (e.target === topFourModal) topFourModal.classList.remove('show')
+    })
 
     const topFourSearch = debounce(async (query) => {
       const resultsEl = document.getElementById('topfour-results')
-      if (!query || query.length < 2) { resultsEl.innerHTML = ''; return }
+      if (!query || query.length < 2) {
+        resultsEl.innerHTML = ''
+        return
+      }
 
       try {
         const data = await searchSeries(query)
-        resultsEl.innerHTML = data.results.slice(0, 6).map(s => `
+        resultsEl.innerHTML = data.results
+          .slice(0, 6)
+          .map(
+            (s) => `
           <div class="search-result-item" data-series='${JSON.stringify({ id: s.id, name: s.name, poster_path: s.poster_path })}'>
             <img class="mini-poster" src="${IMG.poster(s.poster_path, 'w92') || ''}" alt="" onerror="this.style.display='none'" />
             <div class="result-info">
@@ -251,9 +342,11 @@ export async function renderProfile(container) {
               <div class="result-meta">${s.first_air_date ? new Date(s.first_air_date).getFullYear() : ''}</div>
             </div>
           </div>
-        `).join('')
+        `
+          )
+          .join('')
 
-        resultsEl.querySelectorAll('.search-result-item').forEach(item => {
+        resultsEl.querySelectorAll('.search-result-item').forEach((item) => {
           item.addEventListener('click', async () => {
             const series = JSON.parse(item.dataset.series)
             const newTopFour = [...(profile.top_four || [null, null, null, null])]
@@ -275,8 +368,9 @@ export async function renderProfile(container) {
       }
     }, 300)
 
-    document.getElementById('topfour-search').addEventListener('input', (e) => topFourSearch(e.target.value))
-
+    document
+      .getElementById('topfour-search')
+      .addEventListener('input', (e) => topFourSearch(e.target.value))
   } catch (err) {
     console.error('Profile error:', err)
     container.innerHTML = `
@@ -296,15 +390,16 @@ async function renderProfileRatingsChart(stats) {
   if (!canvas) return
 
   // Load Chart.js modules dynamically
-  const { Chart, BarController, BarElement, CategoryScale, LinearScale, Tooltip } = await import('chart.js')
+  const { Chart, BarController, BarElement, CategoryScale, LinearScale, Tooltip } =
+    await import('chart.js')
   Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip)
 
   const ratingValues = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]
   const distribution = {}
-  ratingValues.forEach(v => {
+  ratingValues.forEach((v) => {
     distribution[v] = 0
   })
-  stats.ratings.forEach(r => {
+  stats.ratings.forEach((r) => {
     const key = Number(r.rating)
     if (distribution[key] !== undefined) distribution[key]++
   })
@@ -321,13 +416,15 @@ async function renderProfileRatingsChart(stats) {
   new Chart(canvas, {
     type: 'bar',
     data: {
-      labels: ratingValues.map(v => `${v}★`),
-      datasets: [{
-        data: ratingValues.map(v => distribution[v]),
-        backgroundColor: '#00E054', // Letterboxd green
-        borderRadius: 3,
-        borderSkipped: false
-      }]
+      labels: ratingValues.map((v) => `${v}★`),
+      datasets: [
+        {
+          data: ratingValues.map((v) => distribution[v]),
+          backgroundColor: '#00E054', // Letterboxd green
+          borderRadius: 3,
+          borderSkipped: false
+        }
+      ]
     },
     options: {
       responsive: true,
@@ -349,7 +446,7 @@ async function renderProfileRatingsChart(stats) {
           ticks: {
             color: '#99AABB',
             font: { size: 10 },
-            callback: function(value, index, ticks) {
+            callback: function (value, index, ticks) {
               if (index === 1) return '★'
               if (index === 9) return '★★★★★'
               return ''
