@@ -121,8 +121,8 @@ export async function renderProfile(container) {
         <hr style="border: 0; border-top: 1px solid rgba(153, 170, 187, 0.15); margin: var(--space-xl) 0;" />
 
         <!-- Ratings Chart (Full Width at the bottom) -->
-        <div class="chart-card" style="margin-bottom: var(--space-2xl); background: var(--bg-secondary); border: 1px solid var(--border-color); padding: var(--space-lg); border-radius: var(--radius-lg);">
-          <h2 style="font-size: var(--font-size-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-muted); margin-bottom: var(--space-md); margin-top: 0;">Ratings</h2>
+        <div class="chart-card" style="margin-bottom: var(--space-2xl);">
+          <h2 style="font-size: var(--font-size-md); font-weight: var(--font-weight-semibold); text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: var(--space-md); margin-top: 0;">Mes notes</h2>
           <div style="display: flex; align-items: flex-end; gap: var(--space-md); height: 75px; padding-bottom: 2px;">
             <span style="color: #00E054; font-size: 1.1rem; line-height: 1; padding-bottom: 1px; user-select: none;">★</span>
             <div style="flex: 1; height: 100%; position: relative; border-bottom: 1.5px solid #2c3440; padding-bottom: 1px;">
