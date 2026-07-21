@@ -277,6 +277,8 @@ h6 {
   gap: var(--space-md);
   overflow-x: auto;
   overflow-y: hidden;
+  padding-top: 12px;
+  margin-top: -12px;
   padding-bottom: var(--space-sm);
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
