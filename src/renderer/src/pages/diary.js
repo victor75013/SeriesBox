@@ -88,6 +88,7 @@ export async function renderDiary(container) {
               </div>
             </div>
             <div class="diary-icons">
+              ${entry.is_liked ? '<span class="is-liked" title="J\'aime">🧡</span>' : ''}
               ${entry.is_rewatch ? '<span class="is-rewatch" title="Re-visionnage">🔄</span>' : ''}
               ${entry.review ? '<span class="has-review" title="Critique">💬</span>' : ''}
               <button class="btn btn-ghost btn-sm diary-edit" data-entry-id="${entry.id}" title="Modifier">✏️</button>

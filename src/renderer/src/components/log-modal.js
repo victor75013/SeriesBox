@@ -2,12 +2,21 @@
 // SeriesBox — Programmatic Log/Edit Modal
 // ===========================
 
-import { addDiaryEntry, updateDiaryEntry, setRating } from '../api/supabase.js'
+import { addDiaryEntry, updateDiaryEntry, setRating, isSeriesLiked, likeSeries, unlikeSeries } from '../api/supabase.js'
 import { createStarRating } from '../utils/helpers.js'
 import { toast } from './toast.js'
 
-export function showLogModal({ userId, tmdbId, seriesName, posterPath, entry = null, onSave }) {
+export async function showLogModal({ userId, tmdbId, seriesName, posterPath, entry = null, onSave }) {
   const isEdit = !!entry
+
+  // Check initial like status
+  let initialLiked = entry ? !!entry.is_liked : false
+  try {
+    const isLikedInDb = await isSeriesLiked(userId, tmdbId)
+    if (isLikedInDb) initialLiked = true
+  } catch {
+    // ignore error
+  }
 
   // Create overlay
   const overlay = document.createElement('div')
@@ -37,10 +46,14 @@ export function showLogModal({ userId, tmdbId, seriesName, posterPath, entry = n
           <label class="form-label">Note</label>
           <div id="log-rating-stars"></div>
         </div>
-        <div class="form-group">
-          <label class="form-input form-checkbox">
+        <div class="form-group" style="display: flex; gap: var(--space-lg); align-items: center;">
+          <label class="form-input form-checkbox" style="width: auto;">
             <input type="checkbox" id="log-rewatch" ${isRewatch ? 'checked' : ''} />
             C'est un re-visionnage
+          </label>
+          <label class="form-input form-checkbox" style="width: auto;">
+            <input type="checkbox" id="log-like" ${initialLiked ? 'checked' : ''} />
+            <span style="color:#ff8000; font-size:1.1rem; line-height:1;">🧡</span> J'aime cette série
           </label>
         </div>
         <div class="form-group">
@@ -90,6 +103,7 @@ export function showLogModal({ userId, tmdbId, seriesName, posterPath, entry = n
     btn.disabled = true
     btn.textContent = 'Enregistrement...'
 
+    const isLiked = overlay.querySelector('#log-like').checked
     const data = {
       user_id: userId,
       tmdb_id: tmdbId,
@@ -99,7 +113,8 @@ export function showLogModal({ userId, tmdbId, seriesName, posterPath, entry = n
       rating: currentRating || null,
       review: overlay.querySelector('#log-review').value.trim() || null,
       is_rewatch: overlay.querySelector('#log-rewatch').checked,
-      contains_spoilers: overlay.querySelector('#log-spoilers').checked
+      contains_spoilers: overlay.querySelector('#log-spoilers').checked,
+      is_liked: isLiked
     }
 
     try {
@@ -110,11 +125,19 @@ export function showLogModal({ userId, tmdbId, seriesName, posterPath, entry = n
           rating: data.rating,
           review: data.review,
           is_rewatch: data.is_rewatch,
-          contains_spoilers: data.contains_spoilers
+          contains_spoilers: data.contains_spoilers,
+          is_liked: data.is_liked
         })
       } else {
         // Create new diary entry
         await addDiaryEntry(data)
+      }
+
+      // Sync like state in likes table
+      if (isLiked) {
+        await likeSeries(userId, { id: tmdbId, name: seriesName, poster_path: posterPath })
+      } else {
+        await unlikeSeries(userId, tmdbId)
       }
 
       // Upsert global rating for the series

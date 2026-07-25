@@ -50,6 +50,10 @@ export async function renderStats(container) {
             <div class="stat-value">${stats.totalWatchlist}</div>
             <div class="stat-label">En watchlist</div>
           </div>
+          <div class="stat-card">
+            <div class="stat-value">${stats.totalLikes || 0}</div>
+            <div class="stat-label">Séries aimées</div>
+          </div>
         </div>
 
         <!-- Charts -->

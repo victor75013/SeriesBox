@@ -93,6 +93,34 @@ export async function renderProfile(container) {
 
         <hr style="border: 0; border-top: 1px solid rgba(153, 170, 187, 0.15); margin: var(--space-xl) 0;" />
 
+        <!-- Liked Series -->
+        <div class="section-header" style="margin-bottom: var(--space-base);">
+          <h2 style="font-size: var(--font-size-md); font-weight: var(--font-weight-semibold); text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 0;">
+            Séries aimées <span style="color:#ff8000; font-size:var(--font-size-sm); font-weight:normal; margin-left:6px;">🧡 ${stats.likedSeries?.length || 0}</span>
+          </h2>
+        </div>
+        <div class="scroll-row" id="liked-posters" style="margin-bottom: var(--space-xl);">
+          ${
+            stats.likedSeries && stats.likedSeries.length > 0
+              ? stats.likedSeries
+                  .map(
+                    (s) => `
+                <div class="series-card" data-id="${s.tmdb_id}" style="width:120px;flex-shrink:0;">
+                  ${
+                    s.poster_path
+                      ? `<img class="poster" src="${IMG.poster(s.poster_path, 'w185')}" alt="${s.series_name}" loading="lazy" />`
+                      : `<div class="poster-placeholder">📺</div>`
+                  }
+                </div>
+              `
+                  )
+                  .join('')
+              : '<p style="color:var(--text-muted);">Aucune série aimée pour le moment</p>'
+          }
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid rgba(153, 170, 187, 0.15); margin: var(--space-xl) 0;" />
+
         <!-- Recent Activity -->
         <div class="section-header" style="margin-bottom: var(--space-base);">
           <h2 style="font-size: var(--font-size-md); font-weight: var(--font-weight-semibold); text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 0;">Activité récente</h2>
@@ -156,6 +184,12 @@ export async function renderProfile(container) {
 
     // Render Ratings Chart
     renderProfileRatingsChart(stats)
+    container.querySelectorAll('#liked-posters .series-card').forEach((card) => {
+      card.addEventListener('click', () => {
+        router.navigate(`/series/${card.dataset.id}`)
+      })
+    })
+
     container.querySelectorAll('#recent-posters .series-card').forEach((card) => {
       card.addEventListener('click', () => {
         const tmdbId = card.dataset.id

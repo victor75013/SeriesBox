@@ -24,7 +24,19 @@ CREATE TABLE IF NOT EXISTS diary_entries (
   review TEXT,
   is_rewatch BOOLEAN DEFAULT FALSE,
   contains_spoilers BOOLEAN DEFAULT FALSE,
+  is_liked BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Séries aimées (Likes / Coups de cœur)
+CREATE TABLE IF NOT EXISTS likes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  tmdb_id INTEGER NOT NULL,
+  series_name TEXT NOT NULL,
+  poster_path TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, tmdb_id)
 );
 
 -- Watchlist
@@ -82,6 +94,7 @@ ALTER TABLE watchlist ENABLE ROW LEVEL SECURITY;
 ALTER TABLE lists ENABLE ROW LEVEL SECURITY;
 ALTER TABLE list_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ratings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE likes ENABLE ROW LEVEL SECURITY;
 
 -- Profiles: users can read/update their own profile
 CREATE POLICY "Users can view own profile" ON profiles
@@ -163,6 +176,16 @@ CREATE POLICY "Users can update own ratings" ON ratings
 CREATE POLICY "Users can delete own ratings" ON ratings
   FOR DELETE USING (auth.uid() = user_id);
 
+-- Likes: users can CRUD their own likes
+CREATE POLICY "Users can view own likes" ON likes
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own likes" ON likes
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own likes" ON likes
+  FOR DELETE USING (auth.uid() = user_id);
+
 -- ===========================
 -- Indexes for performance
 -- ===========================
@@ -175,3 +198,5 @@ CREATE INDEX IF NOT EXISTS idx_lists_user_id ON lists(user_id);
 CREATE INDEX IF NOT EXISTS idx_list_items_list_id ON list_items(list_id);
 CREATE INDEX IF NOT EXISTS idx_ratings_user_id ON ratings(user_id);
 CREATE INDEX IF NOT EXISTS idx_ratings_tmdb_id ON ratings(tmdb_id);
+CREATE INDEX IF NOT EXISTS idx_likes_user_id ON likes(user_id);
+CREATE INDEX IF NOT EXISTS idx_likes_tmdb_id ON likes(tmdb_id);

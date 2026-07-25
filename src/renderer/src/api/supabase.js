@@ -223,6 +223,55 @@ export async function isInWatchlist(userId, tmdbId) {
   return !!data
 }
 
+// ── Likes (Coups de cœur / Séries aimées) ──
+export async function likeSeries(userId, series) {
+  const { data, error } = await supabase
+    .from('likes')
+    .upsert(
+      {
+        user_id: userId,
+        tmdb_id: series.id || series.tmdb_id,
+        series_name: series.name || series.series_name,
+        poster_path: series.poster_path
+      },
+      { onConflict: 'user_id,tmdb_id' }
+    )
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function unlikeSeries(userId, tmdbId) {
+  const { error } = await supabase
+    .from('likes')
+    .delete()
+    .eq('user_id', userId)
+    .eq('tmdb_id', tmdbId)
+  if (error) throw error
+}
+
+export async function isSeriesLiked(userId, tmdbId) {
+  const { data, error } = await supabase
+    .from('likes')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('tmdb_id', tmdbId)
+    .single()
+  if (error && error.code !== 'PGRST116') throw error
+  return !!data
+}
+
+export async function getLikedSeries(userId) {
+  const { data, error } = await supabase
+    .from('likes')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data
+}
+
 // ── Lists ──
 export async function createList(userId, title, description = '') {
   const { data, error } = await supabase
@@ -326,11 +375,12 @@ export async function updateListItem(itemId, updates) {
 
 // ── Statistics Helpers ──
 export async function getStats(userId) {
-  const [diary, ratings, watchlist, lists] = await Promise.all([
+  const [diary, ratings, watchlist, lists, likedSeries] = await Promise.all([
     getDiaryEntries(userId, { limit: 1000 }),
     getAllRatings(userId),
     getWatchlist(userId),
-    getLists(userId)
+    getLists(userId),
+    getLikedSeries(userId)
   ])
 
   const totalSeries = new Set(diary.map((e) => e.tmdb_id)).size
@@ -345,10 +395,12 @@ export async function getStats(userId) {
     ratings,
     watchlist,
     lists,
+    likedSeries,
     totalSeries,
     totalEntries,
     totalWatchlist: watchlist.length,
     totalLists: lists.length,
+    totalLikes: likedSeries.length,
     avgRating
   }
 }

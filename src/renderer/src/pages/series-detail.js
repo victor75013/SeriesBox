@@ -12,7 +12,10 @@ import {
   removeFromWatchlist,
   addDiaryEntry,
   getDiaryEntriesForSeries,
-  deleteDiaryEntry
+  deleteDiaryEntry,
+  isSeriesLiked,
+  likeSeries,
+  unlikeSeries
 } from '../api/supabase.js'
 import { router } from '../utils/router.js'
 import { toast } from '../components/toast.js'
@@ -37,12 +40,14 @@ export async function renderSeriesDetail(container, params) {
     const session = await getSession()
     let userRating = null
     let inWatchlist = false
+    let isLiked = false
     let diaryEntries = []
 
     if (session) {
-      ;[userRating, inWatchlist, diaryEntries] = await Promise.all([
+      ;[userRating, inWatchlist, isLiked, diaryEntries] = await Promise.all([
         getRating(session.user.id, series.id),
         isInWatchlist(session.user.id, series.id),
+        isSeriesLiked(session.user.id, series.id),
         getDiaryEntriesForSeries(session.user.id, series.id)
       ])
     }
@@ -117,6 +122,10 @@ export async function renderSeriesDetail(container, params) {
             <button class="action-btn" id="btn-log" title="Logger">
               <span class="action-icon">📝</span>
               <span class="action-label">Logger</span>
+            </button>
+            <button class="action-btn ${isLiked ? 'active btn-like' : ''}" id="btn-like" title="J'aime">
+              <span class="action-icon">${isLiked ? '🧡' : '🤍'}</span>
+              <span class="action-label">J'aime</span>
             </button>
             <button class="action-btn ${inWatchlist ? 'active' : ''}" id="btn-watchlist" title="Watchlist">
               <span class="action-icon">${inWatchlist ? '👁' : '👁‍🗨'}</span>
@@ -267,6 +276,7 @@ export async function renderSeriesDetail(container, params) {
                     <div class="diary-title">${escapeHTML(entry.series_name)}</div>
                     <div class="diary-meta">
                       ${entry.rating ? starsHTML(entry.rating, { size: 'small' }) : ''}
+                      ${entry.is_liked ? '<span class="is-liked" title="J\'aime">🧡</span>' : ''}
                       ${entry.is_rewatch ? '<span class="is-rewatch" title="Re-visionnage">🔄</span>' : ''}
                       ${entry.review ? '<span class="has-review" title="Critique">💬</span>' : ''}
                     </div>
@@ -352,6 +362,32 @@ export async function renderSeriesDetail(container, params) {
           }
         }
       })
+    })
+
+    // ── Like toggle ──
+    document.getElementById('btn-like').addEventListener('click', async () => {
+      if (!session) {
+        toast.error('Connectez-vous pour aimer une série')
+        return
+      }
+      const btn = document.getElementById('btn-like')
+      try {
+        if (isLiked) {
+          await unlikeSeries(session.user.id, series.id)
+          isLiked = false
+          btn.classList.remove('active', 'btn-like')
+          btn.querySelector('.action-icon').textContent = '🤍'
+          toast.success('Retirée des séries aimées')
+        } else {
+          await likeSeries(session.user.id, series)
+          isLiked = true
+          btn.classList.add('active', 'btn-like')
+          btn.querySelector('.action-icon').textContent = '🧡'
+          toast.success('Ajoutée aux séries aimées !')
+        }
+      } catch (err) {
+        toast.error('Erreur J\'aime: ' + err.message)
+      }
     })
 
     // ── Watchlist toggle ──

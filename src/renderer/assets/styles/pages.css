@@ -547,6 +547,10 @@
   color: var(--accent-blue);
 }
 
+.diary-icons .is-liked {
+  color: #ff8000;
+}
+
 .diary-icons .is-rewatch {
   color: var(--accent-orange);
 }

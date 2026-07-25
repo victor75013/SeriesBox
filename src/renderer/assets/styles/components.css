@@ -783,6 +783,10 @@ textarea.form-input {
   color: var(--accent-green);
 }
 
+.action-btn.btn-like.active {
+  color: #ff8000;
+}
+
 .action-btn .action-icon {
   font-size: 1.5rem;
   transition: transform var(--transition-spring);
