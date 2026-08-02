@@ -32,7 +32,6 @@ export async function renderLists(container, params = {}) {
       container.innerHTML = `
         <div class="page-container">
           <div class="empty-state">
-            <div class="empty-state-icon">🔒</div>
             <p class="empty-state-title">Connexion requise</p>
             <p class="empty-state-text">Connectez-vous pour gérer vos listes</p>
           </div>
@@ -124,7 +123,6 @@ function renderListCards(grid, lists) {
   if (lists.length === 0) {
     grid.innerHTML = `
       <div class="empty-state" style="grid-column:1/-1;">
-        <div class="empty-state-icon">📋</div>
         <p class="empty-state-title">Aucune liste</p>
         <p class="empty-state-text">Créez votre première liste pour organiser vos séries</p>
       </div>
@@ -226,7 +224,7 @@ async function renderListDetail(container, listId) {
     // Delete list
     document.getElementById('delete-list-btn').addEventListener('click', async () => {
       const confirmed = await confirmModal(
-        'Supprimer la liste',
+        'Veuillez confirmer',
         `Êtes-vous sûr de vouloir supprimer la liste "${list.title}" ? Cette action est irréversible.`
       )
       if (confirmed) {
@@ -306,7 +304,6 @@ function renderListItems(grid, items, listId, session, container) {
   if (items.length === 0) {
     grid.innerHTML = `
       <div class="empty-state" style="grid-column:1/-1;">
-        <div class="empty-state-icon">📋</div>
         <p class="empty-state-title">Liste vide</p>
         <p class="empty-state-text">Ajoutez des séries à cette liste</p>
       </div>

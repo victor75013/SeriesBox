@@ -23,7 +23,6 @@ export function renderNavbar(container, user) {
         <a class="nav-link" data-nav="/diary" data-route="/diary">Journal</a>
         <a class="nav-link" data-nav="/watchlist" data-route="/watchlist">Watchlist</a>
         <a class="nav-link" data-nav="/lists" data-route="/lists">Listes</a>
-        <a class="nav-link" data-nav="/stats" data-route="/stats">Stats</a>
       </div>
 
       <div class="navbar-search" id="navbar-search">
@@ -37,7 +36,6 @@ export function renderNavbar(container, user) {
           <button class="btn btn-ghost btn-sm" id="user-menu-btn">▾</button>
           <div class="dropdown-menu" id="user-dropdown">
             <div class="dropdown-item" data-nav="/profile">Mon profil</div>
-            <div class="dropdown-item" data-nav="/stats">Statistiques</div>
             <div class="dropdown-divider"></div>
             <div class="dropdown-item" id="logout-btn">Déconnexion</div>
           </div>

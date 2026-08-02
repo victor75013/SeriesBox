@@ -17,7 +17,6 @@ export async function renderWatchlist(container) {
       container.innerHTML = `
         <div class="page-container">
           <div class="empty-state">
-            <div class="empty-state-icon">🔒</div>
             <p class="empty-state-title">Connexion requise</p>
             <p class="empty-state-text">Connectez-vous pour accéder à votre watchlist</p>
           </div>
@@ -73,7 +72,6 @@ export async function renderWatchlist(container) {
       if (watchlist.length === 0) {
         tabContent.innerHTML = `
           <div class="empty-state" style="grid-column:1/-1;">
-            <div class="empty-state-icon">📋</div>
             <p class="empty-state-title">Watchlist vide</p>
             <p class="empty-state-text">Ajoutez des séries à votre watchlist depuis leur page de détails</p>
             <button class="btn btn-primary" style="margin-top:16px;" id="go-search">Découvrir des séries</button>
@@ -89,7 +87,7 @@ export async function renderWatchlist(container) {
             <div class="series-card" data-id="${item.tmdb_id}">
               ${item.poster_path
                 ? `<img class="poster" src="${IMG.poster(item.poster_path, 'w342')}" alt="${item.series_name}" loading="lazy" />`
-                : `<div class="poster-placeholder">📺</div>`
+                : `<div class="poster-placeholder"></div>`
               }
               <div class="watchlist-badge" title="Dans la watchlist">👁</div>
               <div class="card-overlay">
@@ -135,7 +133,6 @@ export async function renderWatchlist(container) {
       if (watchlist.length === 0) {
         tabContent.innerHTML = `
           <div class="empty-state">
-            <div class="empty-state-icon">📅</div>
             <p class="empty-state-title">Watchlist vide</p>
             <p class="empty-state-text">Ajoutez des séries à votre watchlist pour suivre leurs diffusions.</p>
           </div>
@@ -170,7 +167,6 @@ export async function renderWatchlist(container) {
         if (upcomingEpisodes.length === 0) {
           tabContent.innerHTML = `
             <div class="empty-state" style="margin-top: 20px;">
-              <div class="empty-state-icon">📺</div>
               <p class="empty-state-title">Aucune sortie planifiée</p>
               <p class="empty-state-text">Les séries de votre watchlist sont terminées, en pause ou n'ont pas encore annoncé de dates de diffusion.</p>
             </div>

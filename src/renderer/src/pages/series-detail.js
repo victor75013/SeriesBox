@@ -315,12 +315,15 @@ export async function renderSeriesDetail(container, params) {
         return
       }
 
+      // Pre-fill with the most recent diary entry if one exists
+      const existingEntry = diaryEntries.length > 0 ? diaryEntries[0] : null
+
       showLogModal({
         userId: session.user.id,
         tmdbId: series.id,
         seriesName: series.name,
         posterPath: series.poster_path,
-        entry: null,
+        entry: existingEntry,
         onSave: () => renderSeriesDetail(container, { id })
       })
     })
@@ -349,7 +352,7 @@ export async function renderSeriesDetail(container, params) {
       btn.addEventListener('click', async (e) => {
         e.stopPropagation()
         const confirmed = await confirmModal(
-          'Supprimer le visionnage',
+          'Veuillez confirmer',
           'Voulez-vous vraiment retirer cette série de votre journal de visionnage ?'
         )
         if (confirmed) {
@@ -494,7 +497,6 @@ export async function renderSeriesDetail(container, params) {
     container.innerHTML = `
       <div class="page-container">
         <div class="empty-state">
-          <div class="empty-state-icon">❌</div>
           <p class="empty-state-title">Erreur de chargement</p>
           <p class="empty-state-text">${err.message}</p>
         </div>

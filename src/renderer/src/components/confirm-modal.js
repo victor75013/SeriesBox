@@ -14,7 +14,7 @@ export function confirmModal(title, message) {
       <div class="modal" style="max-width: 400px; transform: scale(0.95) translateY(10px); transition: transform var(--transition-base);">
         <div class="modal-header" style="padding: var(--space-base) var(--space-lg);">
           <h3 class="modal-title" style="color: var(--accent-red); display: flex; align-items: center; gap: 8px;">
-            ⚠️ ${title}
+            ${title}
           </h3>
           <button class="modal-close" id="confirm-modal-close-btn">✕</button>
         </div>

@@ -19,7 +19,6 @@ import { renderSeriesDetail } from './pages/series-detail.js'
 import { renderDiary } from './pages/diary.js'
 import { renderWatchlist } from './pages/watchlist.js'
 import { renderLists } from './pages/lists.js'
-import { renderStats } from './pages/stats.js'
 import { renderProfile } from './pages/profile.js'
 
 // App state
@@ -89,10 +88,6 @@ async function init() {
       updateActiveNav()
       await renderLists(contentContainer, params)
     })
-    .on('/stats', async () => {
-      updateActiveNav()
-      await renderStats(contentContainer)
-    })
     .on('/profile', async () => {
       updateActiveNav()
       await renderProfile(contentContainer)
@@ -106,7 +101,6 @@ async function init() {
         '/diary',
         '/watchlist',
         '/lists',
-        '/stats',
         '/profile'
       ]
       const needsAuth = protectedRoutes.some((r) => route.startsWith(r))

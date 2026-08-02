@@ -171,9 +171,8 @@ async function renderRecentActivity() {
 
     if (entries.length === 0) {
       activityRow.innerHTML = `
-        <div class="empty-state" style="padding: 24px;">
-          <div class="empty-state-icon">📝</div>
-          <p class="empty-state-title">Aucune activité</p>
+        <div class="empty-state">
+          <p class="empty-state-title">Aucune activité récente</p>
           <p class="empty-state-text">Commencez à logger vos séries pour voir votre activité ici</p>
         </div>
       `

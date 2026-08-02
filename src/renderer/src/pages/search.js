@@ -168,8 +168,7 @@ export async function renderSearch(container, params = {}) {
     if (results.length === 0) {
       container.innerHTML = `
         <div class="empty-state" style="grid-column: 1/-1;">
-          <div class="empty-state-icon">🔍</div>
-          <p class="empty-state-title">Aucune série trouvée</p>
+          <p class="empty-state-title">Aucun résultat</p>
           <p class="empty-state-text">Essayez une autre recherche</p>
         </div>
       `

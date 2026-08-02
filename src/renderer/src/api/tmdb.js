@@ -92,6 +92,30 @@ export async function getGenres() {
   return genreCache
 }
 
+// ── Fetch genre names for a single series ──
+export async function getSeriesGenres(id) {
+  try {
+    const data = await tmdbFetch(`/tv/${id}`)
+    return data.genres || []
+  } catch {
+    return []
+  }
+}
+
+// ── Batch-fetch genres for multiple series (respects rate limit) ──
+export async function getGenresForEntries(tmdbIds, batchSize = 8) {
+  const unique = [...new Set(tmdbIds)]
+  const map = new Map()
+  for (let i = 0; i < unique.length; i += batchSize) {
+    const batch = unique.slice(i, i + batchSize)
+    const results = await Promise.allSettled(batch.map((id) => getSeriesGenres(id)))
+    results.forEach((r, idx) => {
+      map.set(batch[idx], r.status === 'fulfilled' ? r.value.map((g) => g.name) : [])
+    })
+  }
+  return map
+}
+
 // ── Get genre name by ID ──
 export async function getGenreName(id) {
   const genres = await getGenres()
