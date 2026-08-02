@@ -43,13 +43,16 @@ async function init() {
   // Auth state change listener
   onAuthStateChange((event, session) => {
     currentUser = session?.user || null
-    if (event === 'SIGNED_IN') {
-      renderNavbar(navbarContainer, currentUser)
-      if (router.getCurrentPath() === '/auth') {
-        router.navigate('/')
+    if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
+      if (currentUser && navbarContainer) {
+        renderNavbar(navbarContainer, currentUser)
+        if (router.getCurrentPath() === '/auth') {
+          router.navigate('/')
+        }
       }
     } else if (event === 'SIGNED_OUT') {
       currentUser = null
+      if (navbarContainer) navbarContainer.innerHTML = ''
       router.navigate('/auth')
     }
   })
