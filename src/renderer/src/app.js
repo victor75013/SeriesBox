@@ -36,19 +36,15 @@ async function init() {
   navbarContainer = document.getElementById('navbar-container')
   contentContainer = document.getElementById('content')
 
-  // Check auth state
-  const session = await getSession()
-  currentUser = session?.user || null
-
-  // Auth state change listener
+  // Listen to auth state changes reactively
   onAuthStateChange((event, session) => {
+    const prevUser = currentUser
     currentUser = session?.user || null
-    if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
-      if (currentUser && navbarContainer) {
-        renderNavbar(navbarContainer, currentUser)
-        if (router.getCurrentPath() === '/auth') {
-          router.navigate('/')
-        }
+
+    if (currentUser) {
+      if (navbarContainer) renderNavbar(navbarContainer, currentUser)
+      if (router.getCurrentPath() === '/auth') {
+        router.navigate('/')
       }
     } else if (event === 'SIGNED_OUT') {
       currentUser = null
@@ -56,6 +52,17 @@ async function init() {
       router.navigate('/auth')
     }
   })
+
+  // Quick initial check (non-blocking for UI render)
+  try {
+    const session = await getSession()
+    currentUser = session?.user || null
+    if (currentUser) {
+      renderNavbar(navbarContainer, currentUser)
+    }
+  } catch {
+    // ignore
+  }
 
   // Setup routes
   router
@@ -96,16 +103,9 @@ async function init() {
       await renderProfile(contentContainer)
     })
     .guard(async (route) => {
-      // Auth pages don't need protection
       if (route === '/auth') return true
 
-      // Protected routes need auth
-      const protectedRoutes = [
-        '/diary',
-        '/watchlist',
-        '/lists',
-        '/profile'
-      ]
+      const protectedRoutes = ['/diary', '/watchlist', '/lists', '/profile']
       const needsAuth = protectedRoutes.some((r) => route.startsWith(r))
 
       if (needsAuth && !currentUser) {
@@ -114,7 +114,6 @@ async function init() {
         return false
       }
 
-      // Show navbar for non-auth routes
       if (route !== '/auth' && navbarContainer.innerHTML === '') {
         renderNavbar(navbarContainer, currentUser)
       }
@@ -122,21 +121,11 @@ async function init() {
       return true
     })
 
-  // Initial render
-  if (currentUser) {
-    renderNavbar(navbarContainer, currentUser)
-  }
-
-  // Start router
+  // Start router immediately
   router.start()
 
-  // If no hash, go to home or auth
   if (!window.location.hash) {
-    if (currentUser) {
-      router.navigate('/')
-    } else {
-      router.navigate('/')
-    }
+    router.navigate('/')
   }
 }
 
