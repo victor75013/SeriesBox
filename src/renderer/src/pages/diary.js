@@ -94,21 +94,28 @@ export async function renderDiary(container) {
     })
 
     // Shared filter state (used by both list and grid)
-    const listFilters = { notation: '', decade: '', genre: '', sort: 'date-desc' }
-    const gridFilters = { notation: '', decade: '', genre: '', sort: 'date-desc' }
+    const listFilters = { notation: '', notationMode: 'exact', decade: '', genre: '', sort: 'date-desc' }
+    const gridFilters = { notation: '', notationMode: 'exact', decade: '', genre: '', sort: 'date-desc' }
+    const reviewFilters = { notation: '', notationMode: 'exact', decade: '', sort: 'date-desc' }
 
     // ── Year options (individual years from watched dates) ──
     const watchedYears = [...new Set(entries.map((e) => new Date(e.watched_date).getFullYear()))].sort((a, b) => b - a)
 
-    function getNotationLabel(val) {
+    function getNotationLabel(val, mode = 'exact') {
       if (!val) return ''
       if (val === 'norating') return '— Non noté'
-      return `★ ${val}`
+      return mode === 'min' ? `★ ${val}+` : `★ ${val}`
+    }
+
+    function getNotationHoverText(val, mode = 'exact') {
+      if (!val) return ''
+      if (val === 'norating') return 'Non noté'
+      return mode === 'min' ? `★ ${val} et plus` : `Note exacte : ★ ${val}`
     }
 
     // ── Filter bar HTML builder ──
     function buildFilterBar(idPrefix, filters) {
-      const notationText = getNotationLabel(filters.notation)
+      const notationText = getNotationLabel(filters.notation, filters.notationMode)
       return `
         <div class="diary-filter-bar">
           <div class="diary-filter-group">
@@ -116,10 +123,18 @@ export async function renderDiary(container) {
               <button class="diary-filter-btn ${filters.notation ? 'has-filter' : ''}" data-filter="notation" data-prefix="${idPrefix}">
                 Notation <span class="diary-filter-sort-label" id="notation-label-${idPrefix}">${notationText}</span> <span class="diary-filter-arrow">▾</span>
               </button>
-              <div class="diary-filter-menu notation-filter-menu" style="padding: 16px; min-width: 230px; text-align: center;">
-                <div style="font-size: var(--font-size-xs); color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">Sélectionner une note</div>
+              <div class="diary-filter-menu notation-filter-menu" style="padding: 16px; min-width: 240px; text-align: center;">
+                <div class="notation-mode-toggle" style="display: flex; gap: 4px; background: var(--bg-tertiary); padding: 3px; border-radius: var(--radius-md); margin-bottom: 12px;">
+                  <button class="notation-mode-btn ${filters.notationMode !== 'min' ? 'active' : ''}" data-mode="exact" type="button" style="flex: 1; border: none; padding: 6px; font-size: var(--font-size-xs); font-weight: 600; border-radius: var(--radius-sm); cursor: pointer;">
+                    Note exacte
+                  </button>
+                  <button class="notation-mode-btn ${filters.notationMode === 'min' ? 'active' : ''}" data-mode="min" type="button" style="flex: 1; border: none; padding: 6px; font-size: var(--font-size-xs); font-weight: 600; border-radius: var(--radius-sm); cursor: pointer;">
+                    Note et +
+                  </button>
+                </div>
+
                 <div class="notation-hover-label" id="notation-hover-${idPrefix}" style="font-size: var(--font-size-sm); color: var(--accent-green); font-weight: 600; min-height: 20px; margin-bottom: 8px;">
-                  ${filters.notation && filters.notation !== 'norating' ? `★ ${filters.notation} et plus` : (filters.notation === 'norating' ? 'Non noté' : '')}
+                  ${getNotationHoverText(filters.notation, filters.notationMode)}
                 </div>
                 <div class="star-rating-picker" id="star-picker-${idPrefix}" style="display:flex; justify-content:center; margin-bottom: 14px; font-size: 1.6rem;"></div>
                 <div style="border-top: 1px solid var(--border-color); padding-top: 8px; display: flex; flex-direction: column; gap: 4px;">
@@ -185,8 +200,12 @@ export async function renderDiary(container) {
       if (filters.notation === 'norating') {
         filtered = filtered.filter((e) => !e.rating)
       } else if (filters.notation) {
-        const min = parseFloat(filters.notation)
-        filtered = filtered.filter((e) => e.rating && Number(e.rating) >= min)
+        const val = parseFloat(filters.notation)
+        if (filters.notationMode === 'min') {
+          filtered = filtered.filter((e) => e.rating && Number(e.rating) >= val)
+        } else {
+          filtered = filtered.filter((e) => e.rating && Number(e.rating) === val)
+        }
       }
 
       if (filters.decade) {
@@ -218,6 +237,17 @@ export async function renderDiary(container) {
       const btn = wrapper.querySelector('[data-filter="notation"]')
       const hoverLabel = wrapper.querySelector('.notation-hover-label')
 
+      function updateNotationDisplay() {
+        if (btn) {
+          btn.classList.toggle('has-filter', !!filters.notation)
+          const labelEl = btn.querySelector('.diary-filter-sort-label')
+          if (labelEl) labelEl.textContent = getNotationLabel(filters.notation, filters.notationMode)
+        }
+        if (hoverLabel) {
+          hoverLabel.textContent = getNotationHoverText(filters.notation, filters.notationMode)
+        }
+      }
+
       function renderStarPicker() {
         if (!starPickerContainer) return
         const currentVal = parseFloat(filters.notation) || 0
@@ -229,15 +259,7 @@ export async function renderDiary(container) {
             filters.notation = String(rating)
           }
 
-          if (btn) {
-            btn.classList.toggle('has-filter', !!filters.notation)
-            const labelEl = btn.querySelector('.diary-filter-sort-label')
-            if (labelEl) labelEl.textContent = getNotationLabel(filters.notation)
-          }
-          if (hoverLabel) {
-            hoverLabel.textContent = filters.notation ? `★ ${filters.notation} et plus` : ''
-          }
-
+          updateNotationDisplay()
           wrapper.querySelectorAll('.diary-filter-menu').forEach((m) => m.classList.remove('show'))
           renderStarPicker()
           onApply()
@@ -245,6 +267,20 @@ export async function renderDiary(container) {
       }
 
       renderStarPicker()
+
+      // Handle notation mode toggle (Note exacte VS Note et +)
+      wrapper.querySelectorAll('.notation-mode-btn').forEach((modeBtn) => {
+        modeBtn.addEventListener('click', (e) => {
+          e.stopPropagation()
+          wrapper.querySelectorAll('.notation-mode-btn').forEach((b) => b.classList.remove('active'))
+          modeBtn.classList.add('active')
+          filters.notationMode = modeBtn.dataset.mode
+          updateNotationDisplay()
+          if (filters.notation && filters.notation !== 'norating') {
+            onApply()
+          }
+        })
+      })
 
       wrapper.querySelectorAll('.diary-filter-dropdown').forEach((dropdown) => {
         const btnDropdown = dropdown.querySelector('.diary-filter-btn')
@@ -268,11 +304,7 @@ export async function renderDiary(container) {
             if (filterKey === 'sort') {
               btnDropdown.querySelector('.diary-filter-sort-label').textContent = getSortLabel(item.dataset.value)
             } else if (filterKey === 'notation') {
-              const labelEl = btnDropdown.querySelector('.diary-filter-sort-label')
-              if (labelEl) labelEl.textContent = getNotationLabel(item.dataset.value)
-              if (hoverLabel) {
-                hoverLabel.textContent = item.dataset.value === 'norating' ? 'Non noté' : ''
-              }
+              updateNotationDisplay()
               renderStarPicker()
             }
             btnDropdown.classList.toggle('has-filter', !!item.dataset.value && item.dataset.value !== 'date-desc')

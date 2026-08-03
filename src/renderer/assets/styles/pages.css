@@ -661,6 +661,17 @@
   transform: scale(1.2);
 }
 
+.notation-mode-btn {
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.notation-mode-btn.active {
+  background: var(--bg-secondary);
+  color: var(--accent-green);
+  box-shadow: var(--shadow-sm);
+}
+
 .diary-filter-group {
   display: flex;
   align-items: center;
