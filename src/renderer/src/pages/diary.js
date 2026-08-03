@@ -119,7 +119,7 @@ export async function renderDiary(container) {
               <div class="diary-filter-menu notation-filter-menu" style="padding: 16px; min-width: 230px; text-align: center;">
                 <div style="font-size: var(--font-size-xs); color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">Sélectionner une note</div>
                 <div class="notation-hover-label" id="notation-hover-${idPrefix}" style="font-size: var(--font-size-sm); color: var(--accent-green); font-weight: 600; min-height: 20px; margin-bottom: 8px;">
-                  ${filters.notation && filters.notation !== 'norating' ? `★ ${filters.notation}` : ''}
+                  ${filters.notation && filters.notation !== 'norating' ? `★ ${filters.notation} et plus` : (filters.notation === 'norating' ? 'Non noté' : '')}
                 </div>
                 <div class="star-rating-picker" id="star-picker-${idPrefix}" style="display:flex; justify-content:center; margin-bottom: 14px; font-size: 1.6rem;"></div>
                 <div style="border-top: 1px solid var(--border-color); padding-top: 8px; display: flex; flex-direction: column; gap: 4px;">
@@ -186,7 +186,7 @@ export async function renderDiary(container) {
         filtered = filtered.filter((e) => !e.rating)
       } else if (filters.notation) {
         const min = parseFloat(filters.notation)
-        filtered = filtered.filter((e) => e.rating && e.rating >= min)
+        filtered = filtered.filter((e) => e.rating && Number(e.rating) >= min)
       }
 
       if (filters.decade) {
@@ -214,29 +214,44 @@ export async function renderDiary(container) {
 
     // ── Attach filter bar event listeners ──
     function attachFilterListeners(wrapper, filters, onApply) {
-      // Initialize star rating picker in dropdown
       const starPickerContainer = wrapper.querySelector(`.star-rating-picker`)
-      if (starPickerContainer) {
+      const btn = wrapper.querySelector('[data-filter="notation"]')
+      const hoverLabel = wrapper.querySelector('.notation-hover-label')
+
+      function renderStarPicker() {
+        if (!starPickerContainer) return
         const currentVal = parseFloat(filters.notation) || 0
         createStarRating(starPickerContainer, currentVal, (rating) => {
-          filters.notation = String(rating)
-          const btn = wrapper.querySelector('[data-filter="notation"]')
+          // Toggle off if clicking the same rating
+          if (filters.notation === String(rating)) {
+            filters.notation = ''
+          } else {
+            filters.notation = String(rating)
+          }
+
           if (btn) {
-            btn.classList.add('has-filter')
+            btn.classList.toggle('has-filter', !!filters.notation)
             const labelEl = btn.querySelector('.diary-filter-sort-label')
             if (labelEl) labelEl.textContent = getNotationLabel(filters.notation)
           }
+          if (hoverLabel) {
+            hoverLabel.textContent = filters.notation ? `★ ${filters.notation} et plus` : ''
+          }
+
           wrapper.querySelectorAll('.diary-filter-menu').forEach((m) => m.classList.remove('show'))
+          renderStarPicker()
           onApply()
         })
       }
 
-      wrapper.querySelectorAll('.diary-filter-dropdown').forEach((dropdown) => {
-        const btn = dropdown.querySelector('.diary-filter-btn')
-        const menu = dropdown.querySelector('.diary-filter-menu')
-        const filterKey = btn.dataset.filter
+      renderStarPicker()
 
-        btn.addEventListener('click', (e) => {
+      wrapper.querySelectorAll('.diary-filter-dropdown').forEach((dropdown) => {
+        const btnDropdown = dropdown.querySelector('.diary-filter-btn')
+        const menu = dropdown.querySelector('.diary-filter-menu')
+        const filterKey = btnDropdown.dataset.filter
+
+        btnDropdown.addEventListener('click', (e) => {
           e.stopPropagation()
           const isOpen = menu.classList.contains('show')
           wrapper.querySelectorAll('.diary-filter-menu').forEach((m) => m.classList.remove('show'))
@@ -251,17 +266,16 @@ export async function renderDiary(container) {
             filters[filterKey] = item.dataset.value
 
             if (filterKey === 'sort') {
-              btn.querySelector('.diary-filter-sort-label').textContent = getSortLabel(item.dataset.value)
+              btnDropdown.querySelector('.diary-filter-sort-label').textContent = getSortLabel(item.dataset.value)
             } else if (filterKey === 'notation') {
-              const labelEl = btn.querySelector('.diary-filter-sort-label')
+              const labelEl = btnDropdown.querySelector('.diary-filter-sort-label')
               if (labelEl) labelEl.textContent = getNotationLabel(item.dataset.value)
-              // Reset star picker display if non-numeric rating chosen
-              if (starPickerContainer) {
-                const currentVal = parseFloat(item.dataset.value) || 0
-                createStarRating(starPickerContainer, currentVal, null)
+              if (hoverLabel) {
+                hoverLabel.textContent = item.dataset.value === 'norating' ? 'Non noté' : ''
               }
+              renderStarPicker()
             }
-            btn.classList.toggle('has-filter', !!item.dataset.value && item.dataset.value !== 'date-desc')
+            btnDropdown.classList.toggle('has-filter', !!item.dataset.value && item.dataset.value !== 'date-desc')
 
             menu.classList.remove('show')
             onApply()
