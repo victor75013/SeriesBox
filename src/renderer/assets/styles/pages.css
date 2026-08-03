@@ -646,6 +646,21 @@
   border-bottom: 1px solid var(--border-color);
 }
 
+.notation-filter-menu .star-rating-picker {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.notation-filter-menu .star-rating-picker .star {
+  transition: transform var(--transition-fast), color var(--transition-fast);
+}
+
+.notation-filter-menu .star-rating-picker .star:hover {
+  transform: scale(1.2);
+}
+
 .diary-filter-group {
   display: flex;
   align-items: center;

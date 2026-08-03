@@ -6,7 +6,7 @@ import { getDiaryEntries, getSession, deleteDiaryEntry } from '../api/supabase.j
 import { IMG, getGenresForEntries } from '../api/tmdb.js'
 import { router } from '../utils/router.js'
 import { toast } from '../components/toast.js'
-import { starsHTML, groupBy, getYear } from '../utils/helpers.js'
+import { starsHTML, groupBy, getYear, createStarRating } from '../utils/helpers.js'
 import { confirmModal } from '../components/confirm-modal.js'
 import { showLogModal } from '../components/log-modal.js'
 
@@ -100,22 +100,32 @@ export async function renderDiary(container) {
     // ── Year options (individual years from watched dates) ──
     const watchedYears = [...new Set(entries.map((e) => new Date(e.watched_date).getFullYear()))].sort((a, b) => b - a)
 
+    function getNotationLabel(val) {
+      if (!val) return ''
+      if (val === 'norating') return '— Non noté'
+      return `★ ${val}`
+    }
+
     // ── Filter bar HTML builder ──
     function buildFilterBar(idPrefix, filters) {
+      const notationText = getNotationLabel(filters.notation)
       return `
         <div class="diary-filter-bar">
           <div class="diary-filter-group">
-            <div class="diary-filter-dropdown">
+            <div class="diary-filter-dropdown" data-notation-dropdown="${idPrefix}">
               <button class="diary-filter-btn ${filters.notation ? 'has-filter' : ''}" data-filter="notation" data-prefix="${idPrefix}">
-                Notation <span class="diary-filter-arrow">▾</span>
+                Notation <span class="diary-filter-sort-label" id="notation-label-${idPrefix}">${notationText}</span> <span class="diary-filter-arrow">▾</span>
               </button>
-              <div class="diary-filter-menu">
-                <div class="diary-filter-item ${!filters.notation ? 'active' : ''}" data-value="">Toute note</div>
-                <div class="diary-filter-item ${filters.notation === '4.5' ? 'active' : ''}" data-value="4.5">★★★★½ et plus</div>
-                <div class="diary-filter-item ${filters.notation === '4' ? 'active' : ''}" data-value="4">★★★★ et plus</div>
-                <div class="diary-filter-item ${filters.notation === '3' ? 'active' : ''}" data-value="3">★★★ et plus</div>
-                <div class="diary-filter-item ${filters.notation === '2' ? 'active' : ''}" data-value="2">★★ et plus</div>
-                <div class="diary-filter-item ${filters.notation === 'norating' ? 'active' : ''}" data-value="norating">Non noté</div>
+              <div class="diary-filter-menu notation-filter-menu" style="padding: 16px; min-width: 230px; text-align: center;">
+                <div style="font-size: var(--font-size-xs); color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">Sélectionner une note</div>
+                <div class="notation-hover-label" id="notation-hover-${idPrefix}" style="font-size: var(--font-size-sm); color: var(--accent-green); font-weight: 600; min-height: 20px; margin-bottom: 8px;">
+                  ${filters.notation && filters.notation !== 'norating' ? `★ ${filters.notation}` : ''}
+                </div>
+                <div class="star-rating-picker" id="star-picker-${idPrefix}" style="display:flex; justify-content:center; margin-bottom: 14px; font-size: 1.6rem;"></div>
+                <div style="border-top: 1px solid var(--border-color); padding-top: 8px; display: flex; flex-direction: column; gap: 4px;">
+                  <div class="diary-filter-item ${!filters.notation ? 'active' : ''}" data-value="" style="justify-content: center; border-radius: var(--radius-sm);">Toute note</div>
+                  <div class="diary-filter-item ${filters.notation === 'norating' ? 'active' : ''}" data-value="norating" style="justify-content: center; border-radius: var(--radius-sm);">Non noté</div>
+                </div>
               </div>
             </div>
 
@@ -204,6 +214,23 @@ export async function renderDiary(container) {
 
     // ── Attach filter bar event listeners ──
     function attachFilterListeners(wrapper, filters, onApply) {
+      // Initialize star rating picker in dropdown
+      const starPickerContainer = wrapper.querySelector(`.star-rating-picker`)
+      if (starPickerContainer) {
+        const currentVal = parseFloat(filters.notation) || 0
+        createStarRating(starPickerContainer, currentVal, (rating) => {
+          filters.notation = String(rating)
+          const btn = wrapper.querySelector('[data-filter="notation"]')
+          if (btn) {
+            btn.classList.add('has-filter')
+            const labelEl = btn.querySelector('.diary-filter-sort-label')
+            if (labelEl) labelEl.textContent = getNotationLabel(filters.notation)
+          }
+          wrapper.querySelectorAll('.diary-filter-menu').forEach((m) => m.classList.remove('show'))
+          onApply()
+        })
+      }
+
       wrapper.querySelectorAll('.diary-filter-dropdown').forEach((dropdown) => {
         const btn = dropdown.querySelector('.diary-filter-btn')
         const menu = dropdown.querySelector('.diary-filter-menu')
@@ -225,6 +252,14 @@ export async function renderDiary(container) {
 
             if (filterKey === 'sort') {
               btn.querySelector('.diary-filter-sort-label').textContent = getSortLabel(item.dataset.value)
+            } else if (filterKey === 'notation') {
+              const labelEl = btn.querySelector('.diary-filter-sort-label')
+              if (labelEl) labelEl.textContent = getNotationLabel(item.dataset.value)
+              // Reset star picker display if non-numeric rating chosen
+              if (starPickerContainer) {
+                const currentVal = parseFloat(item.dataset.value) || 0
+                createStarRating(starPickerContainer, currentVal, null)
+              }
             }
             btn.classList.toggle('has-filter', !!item.dataset.value && item.dataset.value !== 'date-desc')
 
@@ -443,49 +478,7 @@ export async function renderDiary(container) {
       })
 
       diaryReviews.innerHTML = `
-        <div class="diary-filter-bar">
-          <div class="diary-filter-group">
-            <div class="diary-filter-dropdown">
-              <button class="diary-filter-btn ${reviewFilters.notation ? 'has-filter' : ''}" data-filter="notation">
-                Notation <span class="diary-filter-arrow">▾</span>
-              </button>
-              <div class="diary-filter-menu">
-                <div class="diary-filter-item ${!reviewFilters.notation ? 'active' : ''}" data-value="">Toute note</div>
-                <div class="diary-filter-item ${reviewFilters.notation === '4.5' ? 'active' : ''}" data-value="4.5">★★★★½ et plus</div>
-                <div class="diary-filter-item ${reviewFilters.notation === '4' ? 'active' : ''}" data-value="4">★★★★ et plus</div>
-                <div class="diary-filter-item ${reviewFilters.notation === '3' ? 'active' : ''}" data-value="3">★★★ et plus</div>
-                <div class="diary-filter-item ${reviewFilters.notation === '2' ? 'active' : ''}" data-value="2">★★ et plus</div>
-                <div class="diary-filter-item ${reviewFilters.notation === 'norating' ? 'active' : ''}" data-value="norating">Non noté</div>
-              </div>
-            </div>
-
-            <div class="diary-filter-dropdown">
-              <button class="diary-filter-btn ${reviewFilters.decade ? 'has-filter' : ''}" data-filter="decade">
-                Année <span class="diary-filter-arrow">▾</span>
-              </button>
-              <div class="diary-filter-menu">
-                <div class="diary-filter-item ${!reviewFilters.decade ? 'active' : ''}" data-value="">N'importe quelle année</div>
-                ${watchedYears.map((y) => `<div class="diary-filter-item ${reviewFilters.decade === String(y) ? 'active' : ''}" data-value="${y}">${y}</div>`).join('')}
-              </div>
-            </div>
-
-            <div class="diary-filter-dropdown">
-              <button class="diary-filter-btn" data-filter="sort">
-                Trier par <span class="diary-filter-sort-label">${getSortLabel(reviewFilters.sort)}</span> <span class="diary-filter-arrow">▾</span>
-              </button>
-              <div class="diary-filter-menu">
-                <div class="diary-filter-item ${reviewFilters.sort === 'date-desc' ? 'active' : ''}" data-value="date-desc">Date — Du plus récent</div>
-                <div class="diary-filter-item ${reviewFilters.sort === 'date-asc' ? 'active' : ''}" data-value="date-asc">Date — Du plus ancien</div>
-                <div class="diary-filter-item ${reviewFilters.sort === 'rating-desc' ? 'active' : ''}" data-value="rating-desc">Note — La plus haute</div>
-                <div class="diary-filter-item ${reviewFilters.sort === 'rating-asc' ? 'active' : ''}" data-value="rating-asc">Note — La plus basse</div>
-                <div class="diary-filter-item ${reviewFilters.sort === 'name-asc' ? 'active' : ''}" data-value="name-asc">Nom — A à Z</div>
-                <div class="diary-filter-item ${reviewFilters.sort === 'name-desc' ? 'active' : ''}" data-value="name-desc">Nom — Z à A</div>
-              </div>
-            </div>
-          </div>
-          <span class="diary-filter-count">${filtered.length} critique${filtered.length !== 1 ? 's' : ''}</span>
-        </div>
-
+        ${buildFilterBar('reviews', reviewFilters)}
         <div class="reviews-list">
           ${filtered.length === 0
             ? `<p style="color:var(--text-muted);padding:var(--space-lg) 0;">Aucune critique pour ces filtres</p>`
@@ -515,30 +508,7 @@ export async function renderDiary(container) {
         </div>
       `
 
-      // Dropdown listeners
-      diaryReviews.querySelectorAll('.diary-filter-dropdown').forEach((dropdown) => {
-        const btn = dropdown.querySelector('.diary-filter-btn')
-        const menu = dropdown.querySelector('.diary-filter-menu')
-        const filterKey = btn.dataset.filter
-
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation()
-          const isOpen = menu.classList.contains('show')
-          document.querySelectorAll('.diary-filter-menu').forEach((m) => m.classList.remove('show'))
-          if (!isOpen) menu.classList.add('show')
-        })
-
-        menu.querySelectorAll('.diary-filter-item').forEach((item) => {
-          item.addEventListener('click', () => {
-            reviewFilters[filterKey] = item.dataset.value
-            if (filterKey === 'sort') {
-              btn.querySelector('.diary-filter-sort-label').textContent = getSortLabel(item.dataset.value)
-            }
-            menu.classList.remove('show')
-            renderReviewsView()
-          })
-        })
-      })
+      attachFilterListeners(diaryReviews, reviewFilters, renderReviewsView)
 
       diaryReviews.querySelectorAll('.review-card').forEach((el) => {
         el.addEventListener('click', () => router.navigate(`/series/${el.dataset.tmdb}`))
