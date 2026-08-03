@@ -94,17 +94,22 @@ export function createStarRating(container, currentRating = 0, onChange = null) 
     star.textContent = '★'
     star.dataset.value = i
 
-    // Half-star support on click position
+    // Half-star preview on mouse move
+    star.addEventListener('mousemove', (e) => {
+      const rect = star.getBoundingClientRect()
+      const isHalf = e.clientX - rect.left < rect.width / 2
+      const hoverVal = isHalf ? i - 0.5 : i
+      updateStars(container, hoverVal, true)
+    })
+
+    // Half-star selection on click
     star.addEventListener('click', (e) => {
       const rect = star.getBoundingClientRect()
       const isHalf = e.clientX - rect.left < rect.width / 2
       const value = isHalf ? i - 0.5 : i
+      currentRating = value
       updateStars(container, value)
       if (onChange) onChange(value)
-    })
-
-    star.addEventListener('mouseenter', () => {
-      updateStars(container, i, true)
     })
 
     container.appendChild(star)
