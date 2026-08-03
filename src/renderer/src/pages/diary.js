@@ -484,7 +484,6 @@ export async function renderDiary(container) {
 
     // ── Build Reviews view ──
     const allReviewEntries = [...entries].filter((e) => e.review)
-    const reviewFilters = { notation: '', decade: '', sort: 'date-desc' }
 
     function renderReviewsView() {
       if (allReviewEntries.length === 0) {
