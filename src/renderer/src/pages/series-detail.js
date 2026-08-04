@@ -7,6 +7,7 @@ import {
   getSession,
   getRating,
   setRating,
+  deleteRating,
   isInWatchlist,
   addToWatchlist,
   removeFromWatchlist,
@@ -301,6 +302,26 @@ export async function renderSeriesDetail(container, params) {
       createStarRating(ratingContainer, userRating || 0, async (newRating) => {
         try {
           await setRating(session.user.id, series.id, newRating)
+
+          // Also create/update a diary entry so the rating appears in the Journal
+          if (diaryEntries.length > 0) {
+            // Update the most recent diary entry's rating
+            const { updateDiaryEntry } = await import('../api/supabase.js')
+            await updateDiaryEntry(diaryEntries[0].id, { rating: newRating })
+          } else {
+            // No diary entry exists — create one with today's date
+            const today = new Date().toISOString().split('T')[0]
+            const newEntry = await addDiaryEntry({
+              user_id: session.user.id,
+              tmdb_id: series.id,
+              series_name: series.name,
+              poster_path: series.poster_path,
+              watched_date: today,
+              rating: newRating
+            })
+            diaryEntries.unshift(newEntry)
+          }
+
           toast.success(`Note de ${newRating}/5 enregistrée`)
         } catch (err) {
           toast.error('Erreur lors de la notation')
@@ -358,6 +379,11 @@ export async function renderSeriesDetail(container, params) {
         if (confirmed) {
           try {
             await deleteDiaryEntry(btn.dataset.entryId)
+            // If no more diary entries for this series, also remove the rating
+            const remaining = await getDiaryEntriesForSeries(session.user.id, series.id)
+            if (remaining.length === 0) {
+              await deleteRating(session.user.id, series.id)
+            }
             toast.success('Visionnage supprimé')
             renderSeriesDetail(container, { id })
           } catch (err) {

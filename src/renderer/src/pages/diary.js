@@ -2,7 +2,7 @@
 // SeriesBox — Diary Page
 // ===========================
 
-import { getDiaryEntries, getSession, deleteDiaryEntry } from '../api/supabase.js'
+import { getDiaryEntries, getDiaryEntriesForSeries, getSession, deleteDiaryEntry, deleteRating } from '../api/supabase.js'
 import { IMG, getGenresForEntries } from '../api/tmdb.js'
 import { router } from '../utils/router.js'
 import { toast } from '../components/toast.js'
@@ -358,39 +358,46 @@ export async function renderDiary(container) {
         return
       }
 
-      const grouped = groupBy(filtered, (entry) => {
-        const d = new Date(entry.watched_date)
-        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-      })
+      const isSortByDate = listFilters.sort === 'date-desc' || listFilters.sort === 'date-asc'
 
-      let html = ''
-      for (const [monthKey, monthEntries] of Object.entries(grouped)) {
-        const [year, month] = monthKey.split('-')
-        const date = new Date(year, month - 1, 1)
-        const monthName = date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
-        html += `<h2 class="diary-month-header">${monthName.charAt(0).toUpperCase() + monthName.slice(1)}</h2>`
-
-        for (const entry of monthEntries) {
-          html += `
-            <div class="diary-entry" data-id="${entry.id}" data-tmdb="${entry.tmdb_id}">
-              <img class="diary-poster" src="${IMG.poster(entry.poster_path, 'w92')}" alt=""
-                   onerror="this.style.display='none'" />
-              <div class="diary-info">
-                <div class="diary-title">${entry.series_name}</div>
-                <div class="diary-meta">
-                  ${entry.rating ? starsHTML(entry.rating, { size: 'small' }) : '<span style="color:var(--text-muted)">Non noté</span>'}
-                </div>
-              </div>
-              <div class="diary-icons">
-                ${entry.is_liked ? '<span class="is-liked" title="J\'aime">🧡</span>' : ''}
-                ${entry.is_rewatch ? '<span class="is-rewatch" title="Re-visionnage">🔄</span>' : ''}
-                ${entry.review ? '<span class="has-review" title="Critique">💬</span>' : ''}
-                <button class="btn btn-ghost btn-sm diary-edit" data-entry-id="${entry.id}" title="Modifier">✏️</button>
-                <button class="btn btn-ghost btn-sm diary-delete" data-entry-id="${entry.id}" title="Supprimer">🗑</button>
+      function renderEntryHTML(entry) {
+        return `
+          <div class="diary-entry" data-id="${entry.id}" data-tmdb="${entry.tmdb_id}">
+            <img class="diary-poster" src="${IMG.poster(entry.poster_path, 'w92')}" alt=""
+                 onerror="this.style.display='none'" />
+            <div class="diary-info">
+              <div class="diary-title">${entry.series_name}</div>
+              <div class="diary-meta">
+                ${entry.rating ? starsHTML(entry.rating, { size: 'small' }) : '<span style="color:var(--text-muted)">Non noté</span>'}
               </div>
             </div>
-          `
+            <div class="diary-icons">
+              ${entry.is_liked ? '<span class="is-liked" title="J\'aime">🧡</span>' : ''}
+              ${entry.is_rewatch ? '<span class="is-rewatch" title="Re-visionnage">🔄</span>' : ''}
+              ${entry.review ? '<span class="has-review" title="Critique">💬</span>' : ''}
+              <button class="btn btn-ghost btn-sm diary-edit" data-entry-id="${entry.id}" title="Modifier">✏️</button>
+              <button class="btn btn-ghost btn-sm diary-delete" data-entry-id="${entry.id}" title="Supprimer">🗑</button>
+            </div>
+          </div>
+        `
+      }
+
+      function getMonthHeader(entry) {
+        const d = new Date(entry.watched_date)
+        const monthName = d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+        return monthName.charAt(0).toUpperCase() + monthName.slice(1)
+      }
+
+      let html = ''
+      let lastMonth = null
+
+      for (const entry of filtered) {
+        const month = getMonthHeader(entry)
+        if (month !== lastMonth) {
+          html += `<h2 class="diary-month-header">${month}</h2>`
+          lastMonth = month
         }
+        html += renderEntryHTML(entry)
       }
 
       listContent.innerHTML = html
@@ -427,7 +434,16 @@ export async function renderDiary(container) {
           )
           if (confirmed) {
             try {
+              // Find the entry to get its tmdb_id before deleting
+              const entry = entries.find((e) => e.id === btn.dataset.entryId)
               await deleteDiaryEntry(btn.dataset.entryId)
+              // If no more diary entries for this series, also remove the rating
+              if (entry) {
+                const remaining = await getDiaryEntriesForSeries(session.user.id, entry.tmdb_id)
+                if (remaining.length === 0) {
+                  await deleteRating(session.user.id, entry.tmdb_id)
+                }
+              }
               toast.success('Visionnage supprimé')
               renderDiary(container)
             } catch (err) {

@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS watchlist (
   tmdb_id INTEGER NOT NULL,
   series_name TEXT NOT NULL,
   poster_path TEXT,
+  note TEXT,
   added_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(user_id, tmdb_id)
 );
@@ -128,6 +129,9 @@ CREATE POLICY "Users can insert own watchlist" ON watchlist
 
 CREATE POLICY "Users can delete own watchlist" ON watchlist
   FOR DELETE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own watchlist" ON watchlist
+  FOR UPDATE USING (auth.uid() = user_id);
 
 -- Lists: users can CRUD their own lists
 CREATE POLICY "Users can view own lists" ON lists

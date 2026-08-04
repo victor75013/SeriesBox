@@ -2,7 +2,7 @@
 // SeriesBox — Watchlist Page
 // ===========================
 
-import { getWatchlist, removeFromWatchlist, getSession } from '../api/supabase.js'
+import { getWatchlist, removeFromWatchlist, getSession, updateWatchlistNote } from '../api/supabase.js'
 import { getSeriesDetails, IMG } from '../api/tmdb.js'
 import { router } from '../utils/router.js'
 import { toast } from '../components/toast.js'
@@ -84,17 +84,25 @@ export async function renderWatchlist(container) {
       tabContent.innerHTML = `
         <div class="poster-grid" id="watchlist-grid">
           ${watchlist.map(item => `
-            <div class="series-card" data-id="${item.tmdb_id}">
-              ${item.poster_path
-                ? `<img class="poster" src="${IMG.poster(item.poster_path, 'w342')}" alt="${item.series_name}" loading="lazy" />`
-                : `<div class="poster-placeholder"></div>`
-              }
-              <div class="watchlist-badge" title="Dans la watchlist">👁</div>
-              <div class="card-overlay">
-                <div class="card-title">${item.series_name}</div>
-                <button class="btn btn-sm btn-danger watchlist-remove" data-tmdb="${item.tmdb_id}" style="margin-top:4px;width:100%;">
-                  Retirer
-                </button>
+            <div class="watchlist-card-wrapper" data-id="${item.tmdb_id}">
+              <div class="series-card" data-id="${item.tmdb_id}">
+                ${item.poster_path
+                  ? `<img class="poster" src="${IMG.poster(item.poster_path, 'w342')}" alt="${item.series_name}" loading="lazy" />`
+                  : `<div class="poster-placeholder"></div>`
+                }
+                <div class="watchlist-badge" title="Dans la watchlist">👁</div>
+                <div class="card-overlay">
+                  <div class="card-title">${item.series_name}</div>
+                  <button class="btn btn-sm btn-danger watchlist-remove" data-tmdb="${item.tmdb_id}" style="margin-top:4px;width:100%;">
+                    Retirer
+                  </button>
+                </div>
+              </div>
+              <div class="watchlist-note-area" data-tmdb="${item.tmdb_id}">
+                <div class="watchlist-note-display ${item.note ? 'has-note' : ''}" data-tmdb="${item.tmdb_id}" title="Cliquer pour ajouter un mémo">
+                  ${item.note ? `<span class="watchlist-note-text">${escapeHTML(item.note)}</span>` : `<span class="watchlist-note-placeholder">📝 Ajouter un mémo…</span>`}
+                </div>
+                <textarea class="watchlist-note-input" data-tmdb="${item.tmdb_id}" placeholder="Ex: Arrêté saison 2, j'attends la saison 3…" style="display:none;">${item.note || ''}</textarea>
               </div>
             </div>
           `).join('')}
@@ -122,6 +130,60 @@ export async function renderWatchlist(container) {
             renderShowsGrid()
           } catch (err) {
             toast.error('Erreur: ' + err.message)
+          }
+        })
+      })
+
+      // Note editing
+      tabContent.querySelectorAll('.watchlist-note-display').forEach((display) => {
+        display.addEventListener('click', (e) => {
+          e.stopPropagation()
+          const tmdbId = display.dataset.tmdb
+          const area = display.closest('.watchlist-note-area')
+          const input = area.querySelector('.watchlist-note-input')
+          display.style.display = 'none'
+          input.style.display = 'block'
+          input.focus()
+        })
+      })
+
+      tabContent.querySelectorAll('.watchlist-note-input').forEach((input) => {
+        const saveNote = async () => {
+          const tmdbId = parseInt(input.dataset.tmdb)
+          const note = input.value.trim()
+          const area = input.closest('.watchlist-note-area')
+          const display = area.querySelector('.watchlist-note-display')
+
+          input.style.display = 'none'
+          display.style.display = ''
+
+          if (note) {
+            display.classList.add('has-note')
+            display.innerHTML = `<span class="watchlist-note-text">${escapeHTML(note)}</span>`
+          } else {
+            display.classList.remove('has-note')
+            display.innerHTML = `<span class="watchlist-note-placeholder">📝 Ajouter un mémo…</span>`
+          }
+
+          // Update local data
+          const item = watchlist.find(w => w.tmdb_id === tmdbId)
+          if (item) item.note = note || null
+
+          try {
+            await updateWatchlistNote(session.user.id, tmdbId, note || null)
+          } catch (err) {
+            toast.error('Erreur sauvegarde mémo: ' + err.message)
+          }
+        }
+
+        input.addEventListener('blur', saveNote)
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault()
+            input.blur()
+          }
+          if (e.key === 'Escape') {
+            input.blur()
           }
         })
       })

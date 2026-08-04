@@ -183,6 +183,15 @@ export async function getAllRatings(userId) {
   return data
 }
 
+export async function deleteRating(userId, tmdbId) {
+  const { error } = await supabase
+    .from('ratings')
+    .delete()
+    .eq('user_id', userId)
+    .eq('tmdb_id', tmdbId)
+  if (error) throw error
+}
+
 // ── Watchlist ──
 export async function addToWatchlist(userId, series) {
   const { data, error } = await supabase
@@ -227,6 +236,18 @@ export async function isInWatchlist(userId, tmdbId) {
     .single()
   if (error && error.code !== 'PGRST116') throw error
   return !!data
+}
+
+export async function updateWatchlistNote(userId, tmdbId, note) {
+  const { data, error } = await supabase
+    .from('watchlist')
+    .update({ note })
+    .eq('user_id', userId)
+    .eq('tmdb_id', tmdbId)
+    .select()
+    .single()
+  if (error) throw error
+  return data
 }
 
 // ── Likes (Coups de cœur / Séries aimées) ──
