@@ -433,6 +433,12 @@
   flex-shrink: 0;
   width: 100px;
   text-align: center;
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.cast-card:hover {
+  transform: translateY(-4px);
 }
 
 .cast-photo {
@@ -443,6 +449,12 @@
   margin: 0 auto var(--space-sm);
   background: var(--bg-tertiary);
   border: 2px solid var(--border-color);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.cast-card:hover .cast-photo {
+  border-color: var(--accent-green);
+  box-shadow: 0 4px 12px rgba(0, 229, 155, 0.25);
 }
 
 .cast-name {
@@ -452,6 +464,11 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: color var(--transition-fast);
+}
+
+.cast-card:hover .cast-name {
+  color: var(--accent-green);
 }
 
 .cast-character {

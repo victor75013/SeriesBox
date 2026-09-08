@@ -127,3 +127,25 @@ export async function getGenreName(id) {
 export async function getRecommendations(id, page = 1) {
   return tmdbFetch(`/tv/${id}/recommendations`, { page })
 }
+
+// ── Person Details & Combined Credits ──
+export async function getPersonDetails(id) {
+  const data = await tmdbFetch(`/person/${id}`, {
+    append_to_response: 'combined_credits'
+  })
+
+  // Fallback for biography if empty in French
+  if (!data.biography || data.biography.trim().length === 0) {
+    try {
+      const enData = await tmdbFetch(`/person/${id}`, { language: 'en-US' })
+      if (enData.biography) {
+        data.biography = enData.biography
+      }
+    } catch {
+      // Keep empty if fetch fails
+    }
+  }
+
+  return data
+}
+

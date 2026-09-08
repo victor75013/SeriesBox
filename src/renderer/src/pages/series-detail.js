@@ -24,13 +24,13 @@ import {
   formatDate,
   getYear,
   starsHTML,
-  truncate,
   createStarRating,
   escapeHTML,
   formatRuntime
 } from '../utils/helpers.js'
 import { showLogModal } from '../components/log-modal.js'
 import { confirmModal } from '../components/confirm-modal.js'
+import { showPersonModal } from '../components/person-modal.js'
 
 export async function renderSeriesDetail(container, params) {
   const { id } = params
@@ -202,7 +202,7 @@ export async function renderSeriesDetail(container, params) {
               .slice(0, 15)
               .map(
                 (person) => `
-              <div class="cast-card">
+              <div class="cast-card" data-person-id="${person.id}" title="Voir la fiche de ${escapeHTML(person.name)}">
                 ${
                   person.profile_path
                     ? `<img class="cast-photo" src="${IMG.profile(person.profile_path)}" alt="${person.name}" loading="lazy" />`
@@ -496,6 +496,14 @@ export async function renderSeriesDetail(container, params) {
     // ── Similar series click ──
     document.querySelectorAll('#similar-row .series-card').forEach((card) => {
       card.addEventListener('click', () => router.navigate(`/series/${card.dataset.id}`))
+    })
+
+    // ── Cast member click (Person modal) ──
+    document.querySelectorAll('.cast-card[data-person-id]').forEach((card) => {
+      card.addEventListener('click', () => {
+        const personId = card.dataset.personId
+        if (personId) showPersonModal(personId)
+      })
     })
 
     // ── Auto-open review modal if query param review=true is present ──

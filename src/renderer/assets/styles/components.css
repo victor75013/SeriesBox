@@ -950,3 +950,316 @@ textarea.form-input {
   color: var(--text-primary);
   border-bottom-color: var(--accent-green);
 }
+
+/* ── Person Modal ── */
+.modal.person-modal {
+  max-width: 740px;
+  width: 92%;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal.person-modal .modal-body {
+  overflow-y: auto;
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.person-header {
+  display: flex;
+  gap: var(--space-lg);
+  align-items: flex-start;
+}
+
+.person-avatar-wrapper {
+  flex-shrink: 0;
+}
+
+.person-avatar {
+  width: 130px;
+  height: 180px;
+  border-radius: var(--radius-lg);
+  object-fit: cover;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
+  display: block;
+}
+
+.person-avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  color: var(--text-muted);
+}
+
+.person-meta-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.person-name {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  line-height: var(--line-height-tight);
+}
+
+.person-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin-top: 4px;
+}
+
+.person-birth-info {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.person-bio-container {
+  margin-top: var(--space-sm);
+}
+
+.person-bio {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: var(--line-height-normal);
+  white-space: pre-line;
+}
+
+.person-bio-empty {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  font-style: italic;
+  margin-top: var(--space-xs);
+}
+
+.person-bio-more-btn {
+  background: none;
+  border: none;
+  color: var(--accent-green);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  padding: 4px 0;
+  margin-top: 2px;
+  transition: opacity var(--transition-fast);
+}
+
+.person-bio-more-btn:hover {
+  text-decoration: underline;
+  opacity: 0.85;
+}
+
+/* Credits Section */
+.person-credits-section {
+  border-top: 1px solid var(--border-color);
+  padding-top: var(--space-lg);
+}
+
+.person-credits-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.person-section-title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.person-credits-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.person-tab {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  border-radius: var(--radius-full);
+  padding: 4px 12px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.person-tab:hover {
+  color: var(--text-primary);
+  border-color: var(--border-focus);
+}
+
+.person-tab.active {
+  background: var(--accent-green);
+  color: #03140e;
+  border-color: var(--accent-green);
+  font-weight: var(--font-weight-semibold);
+}
+
+.person-credits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(125px, 1fr));
+  gap: var(--space-md);
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.person-credit-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.person-credit-card.clickable {
+  cursor: pointer;
+}
+
+.person-credit-card.clickable:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent-green);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.person-credit-poster-box {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2/3;
+  background: var(--bg-tertiary);
+  overflow: hidden;
+}
+
+.person-credit-poster {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.person-credit-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: var(--text-muted);
+}
+
+.person-credit-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  font-size: 0.65rem;
+  font-weight: var(--font-weight-bold);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  backdrop-filter: blur(4px);
+}
+
+.person-credit-badge.badge-tv {
+  background: rgba(0, 229, 155, 0.9);
+  color: #03140e;
+}
+
+.person-credit-badge.badge-movie {
+  background: rgba(71, 85, 105, 0.85);
+  color: #f8fafc;
+}
+
+.person-credit-score {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fbbf24;
+  font-size: 0.7rem;
+  font-weight: var(--font-weight-bold);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  backdrop-filter: blur(4px);
+}
+
+.person-credit-info {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.person-credit-title {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.person-credit-card.clickable:hover .person-credit-title {
+  color: var(--accent-green);
+}
+
+.person-credit-role {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.person-credit-year {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+.person-empty-credits {
+  padding: var(--space-xl);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 600px) {
+  .person-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .person-meta-col {
+    align-items: center;
+  }
+  .person-badges {
+    justify-content: center;
+  }
+  .person-avatar {
+    width: 110px;
+    height: 150px;
+  }
+}
+
